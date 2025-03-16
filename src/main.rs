@@ -32,38 +32,64 @@ fn process_input(input: &str) -> Result<(), Error> {
         // help
         "help" => {
             help();
-            Ok(()) // Return Ok for consistency
+            Ok(())
         }
 
         // Shutdown
         "shutdown" => {
             let _ = run_shell_command("sudo shutdown now");
-            Ok(()) // Return Ok for consistency
+            Ok(())
         }
 
         // reboot
         "restart" => {
             let _ = run_shell_command("sudo reboot");
-            Ok(()) // Return Ok for consistency
+            Ok(())
+        }
+
+        // things with extra syntax
+
+        // echo
+        "echo" => {
+            println!("Usage: echo <text>");
+            Ok(())
+        }
+
+        // sh
+        "sh" => {
+            println!("Usage: sh <command>");
+            Ok(())
+        }
+
+        // sh
+        "sh" => {
+            println!("Usage: expr <equation>");
+            Ok(())
         }
 
         // Echo
         _ if input.starts_with("echo ") => {
             let echo_content = &input[5..]; // Strip "echo " from the input
             println!("{}", echo_content); // Display the echo content
-            Ok(()) // Return Ok for consistency
+            Ok(())
         }
 
         // Shell command execution
         _ if input.starts_with("sh ") => {
             let cmd = &input[3..]; // This removes the first 3 characters ("sh ")
             sh(cmd); // Run the shell command
-            Ok(()) // Return Ok for consistency
+            Ok(())
+        }
+
+        // expr
+        _ if input.starts_with("expr ") => {
+            sh(input);
+            Ok(())
         }
 
         _ => {
             println!("{}: command not found", input);
-            Ok(()) // Return Ok for consistency
+            Ok(())
         }
     }
 }
@@ -133,7 +159,7 @@ fn run_shell_command(cmd: &str) -> Result<(), Error> {
 }
 
 fn help() {
-    println!("Welcome to Rusterminal v0.1!");
+    println!("Welcome to Rusterminal v0.1.1!");
     println!("Type \"cmds\" for a list of commands!\n")
 }
 
