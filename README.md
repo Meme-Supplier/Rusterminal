@@ -7,9 +7,11 @@ My old project, PYShell, but rewritten in Rust.
 ### 1. install Rustup:
 
 **Arch:**
+
 `sudo pacman -S rustup` 
 
 **Fedora:**
+
 `sudo dnf install rustup`
 
 **Debian:**
