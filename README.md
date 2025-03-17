@@ -13,8 +13,8 @@ My old project, PYShell, but rewritten in Rust.
 `sudo dnf install rustup`
 
 **Debian:**
-`sudo apt update
-sudo apt install curl build-essential`
+`sudo apt update`
+`sudo apt install curl build-essential`
 `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 `source $HOME/.cargo/env`
 
@@ -22,5 +22,5 @@ sudo apt install curl build-essential`
 `rustup default stable`
 
 ### 3. (Optional) Verify installation:
-`rustc --version
-cargo --version`
+`rustc --version`
+`cargo --version`
