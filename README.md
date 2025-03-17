@@ -13,6 +13,7 @@ My old project, PYShell, but rewritten in Rust.
 `sudo dnf install rustup`
 
 **Debian:**
+
 `sudo apt update`
 
 `sudo apt install curl build-essential`
