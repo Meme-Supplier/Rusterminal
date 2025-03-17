@@ -8,11 +8,12 @@ Maintained by Meme Supplier
 
 use gethostname::gethostname;
 use std::env;
-use std::io::Error;
 use std::io::{self, Write};
-use std::process::{exit, Command};
+use std::process::{exit, Command, Stdio};
 
-fn process_input(input: &str) -> Result<(), Error> {
+static version: &str = "v0.1.2";
+
+fn process_input(input: &str) {
     match input {
         // Clear
         "clear" => run_shell_command("clear"),
@@ -21,98 +22,101 @@ fn process_input(input: &str) -> Result<(), Error> {
         "exit" => exit(0),
 
         // cmds
-        "cmds" => {
-            cmds();
-            Ok(()) // Return Ok for consistency
-        }
+        "cmds" => cmds(),
+
+        // ver
+        "ver" => ver(),
 
         // Empty input
-        "" => Ok(()),
+        "" => (), // Do nothing on empty input
 
         // help
-        "help" => {
-            help();
-            Ok(())
-        }
+        "help" => help(),
 
         // Shutdown
         "shutdown" => {
             let _ = run_shell_command("sudo shutdown now");
-            Ok(())
         }
 
         // reboot
         "restart" => {
             let _ = run_shell_command("sudo reboot");
-            Ok(())
         }
 
         // things with extra syntax
 
         // echo
-        "echo" => {
-            println!("Usage: echo <text>");
-            Ok(())
-        }
+        "echo" => println!("Usage: echo <text>"),
+
+        // Web
+        "web" => println!("Usage: web <page>"),
 
         // sh
-        "sh" => {
-            println!("Usage: sh <command>");
-            Ok(())
-        }
+        "sh" => println!("Usage: sh <command>"),
 
-        // sh
-        "sh" => {
-            println!("Usage: expr <equation>");
-            Ok(())
-        }
+        // expr
+        "expr" => println!("Usage: expr <equation>"),
 
         // Echo
         _ if input.starts_with("echo ") => {
             let echo_content = &input[5..]; // Strip "echo " from the input
             println!("{}", echo_content); // Display the echo content
-            Ok(())
         }
 
         // Shell command execution
         _ if input.starts_with("sh ") => {
-            let cmd = &input[3..]; // This removes the first 3 characters ("sh ")
+            let cmd = &input[3..];
             sh(cmd); // Run the shell command
-            Ok(())
+        }
+
+        // Open a web page
+        _ if input.starts_with("web ") => {
+            let page = &input[4..];
+            web(page); // Run the shell command
         }
 
         // expr
         _ if input.starts_with("expr ") => {
             sh(input);
-            Ok(())
         }
 
         _ => {
             println!("{}: command not found", input);
-            Ok(())
         }
     }
 }
 
-fn sh(cmd: &str) {
-    println!();
+fn web(url: &str) {
+    #[cfg(target_os = "linux")]
+    Command::new("xdg-open")
+        .arg(url)
+        .spawn()
+        .expect("Failed to open webpage");
+}
 
-    // Use sh to execute commands that may require shell features (like expr)
-    let output = Command::new("sh")
+fn ver() {
+    println!("\nRusterminal version: {}\n", version);
+
+    // Path to the Python file
+    let python_script = "./ver.py"; // Replace with your Python file name
+
+    // Run the Python script using 'python' or 'python3'
+    let _ = Command::new("python3") // or "python3"
+        .arg(python_script)
+        .status(); // Run the command without checking status
+
+    println!();
+}
+
+fn sh(cmd: &str) {
+    // Use sh to execute commands that may require shell features
+    let _ = Command::new("sh")
         .arg("-c") // Use the -c option to pass the command as a string to the shell
         .arg(cmd) // Pass the command to be executed
-        .output()
-        .expect("Failed to execute shell command");
-
-    // Check if there was any output from stdout
-    if !output.stdout.is_empty() {
-        println!("{}", String::from_utf8_lossy(&output.stdout));
-    }
-
-    // Check if there was any error output
-    if !output.stderr.is_empty() {
-        eprintln!("{}", String::from_utf8_lossy(&output.stderr));
-    }
+        .stdin(Stdio::inherit()) // Allows interactive commands like sudo
+        .stdout(Stdio::inherit()) // Preserves colored output
+        .stderr(Stdio::inherit()) // Preserves error messages
+        .status(); // Use `.status()` instead of `.output()`
 }
 
 fn cmds() {
@@ -128,6 +132,7 @@ fn cmds() {
         "expr <equation>",
         "restart",
         "shutdown",
+        "ver",
     ];
 
     for line in lines.iter() {
@@ -137,47 +142,38 @@ fn cmds() {
     println!();
 }
 
-fn run_shell_command(cmd: &str) -> Result<(), Error> {
-    // Check if the command exists in the system path
-    let output = Command::new("which").arg(cmd).output();
-
-    match output {
-        Ok(output) if !output.stdout.is_empty() => {
-            // If the command is found, execute it
-            let command_output = Command::new(cmd)
-                .output()
-                .expect("Failed to execute command");
-
-            println!("{}", String::from_utf8_lossy(&command_output.stdout));
-            Ok(())
-        }
-        _ => Err(Error::new(
-            std::io::ErrorKind::NotFound,
-            format!("{} command not found", cmd),
-        )),
+fn run_shell_command(cmd: &str) {
+    if cmd.trim().is_empty() {
+        return;
     }
+
+    // Use a shell (`sh -c`) so multi-word commands and colors work properly
+    let _ = Command::new("sh")
+        .arg("-c")
+        .arg(cmd)
+        .stdin(Stdio::inherit()) // Allows interactive commands (like sudo pacman -Syu)
+        .stdout(Stdio::inherit()) // Preserves output colors
+        .stderr(Stdio::inherit()) // Preserves error messages
+        .status(); // Run the command and wait
 }
 
 fn help() {
-    println!("Welcome to Rusterminal v0.1.1!");
+    println!("Welcome to Rusterminal {}!", version);
     println!("Type \"cmds\" for a list of commands!\n")
 }
 
 fn main() {
-    // Attempt to clear the screen, handling errors if they occur
-    if let Err(e) = run_shell_command("clear") {
-        eprintln!("Error clearing screen: {}", e);
-    }
+    // Attempt to clear the screen, ignoring errors
+    run_shell_command("clear");
 
     if env::consts::OS == "linux" {
-        //let is_linux: bool = true;
+        // Do nothing if it's Linux
     } else {
         println!("Rusterminal is designed for Linux only!\nExiting...");
         exit(0);
     }
 
-    let hostname = gethostname();
-
+    println!();
     help();
 
     loop {
@@ -186,8 +182,8 @@ fn main() {
         // Print the prompt and flush stdout
         print!(
             "{}@{}$~: ",
-            hostname.to_string_lossy(),
-            hostname.to_string_lossy()
+            gethostname().to_string_lossy(),
+            gethostname().to_string_lossy()
         );
         io::stdout().flush().expect("Failed to flush");
 
@@ -197,8 +193,6 @@ fn main() {
             .expect("Failed to read line");
 
         // Process the input
-        if let Err(e) = process_input(input.trim()) {
-            eprintln!("Error processing input: {}", e);
-        }
+        process_input(input.trim());
     }
 }
