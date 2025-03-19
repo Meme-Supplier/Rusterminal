@@ -8,6 +8,13 @@ Maintained by Meme Supplier
 
 import os
 import subprocess
+import sys
+import shutil
+
+pythonMajor = sys.version_info.major # Ex: 3.x.x
+pythonMinor = sys.version_info.minor # Ex: x.12.x
+pythonMicro = sys.version_info.micro # Ex: x.x.3
+pythonVersion = str(f"{pythonMajor}.{pythonMinor}.{pythonMicro}")
 
 def getDE(keys):
     """Returns the first found environment variable from the list of keys."""
@@ -51,10 +58,21 @@ def getDistro():
 def getShell():
     return os.environ.get("SHELL","").split('/')[-1]
 
-lines = [f"Desktop Enviornment: {getDE(["XDG_CURRENT_DESKTOP","DESKTOP_SESSION"])}",
+import shutil
+
+def packageMan():
+    for manager in ["pacman", "apt", "dnf"]:
+        if shutil.which(manager):
+            return manager
+    return None  # If no package manager is found
+
+lines = [f"Python version: {pythonVersion}\n",
+         f"Desktop Enviornment: {getDE(["XDG_CURRENT_DESKTOP","DESKTOP_SESSION"])}",
          f"Window Manager: {getWM()} ({os.environ.get('XDG_SESSION_TYPE')})",
          f"Distro: {getDistro()}",
-         f"Shell: {getShell()}"]
+         f"Shell: {getShell()}",
+         f"Preferred package manager: {packageMan()}",
+         ""]
 
 for line in lines:
     print(line)
