@@ -11,83 +11,53 @@ use std::env;
 use std::io::{self, Write};
 use std::process::{exit, Command, Stdio};
 
-static version: &str = "v0.1.2";
+static VERSION: &str = "v0.1.3";
+
+#[cfg(target_os = "linux")]
 
 fn process_input(input: &str) {
-    match input {
-        // Clear
-        "clear" => run_shell_command("clear"),
+    for command in input.split("&&").map(|s| s.trim()) {
+        if command.is_empty() { continue; }
 
-        // Exit
-        "exit" => exit(0),
+        match command {
+            "clear" => run_shell_command("clear"),
+            "exit" => { exit(0); }
+            "cmds" => cmds(),
+            "ver" => ver(),
+            "reload" => run_shell_command("cargo run main.rs"),
+            "help" => help(),
+            "shutdown" => run_shell_command("sudo shutdown now"),
+            "restart" => run_shell_command("sudo reboot"),
+            "uptime" => run_shell_command("uptime"),
+            "python" | "python3" => run_shell_command("python3"),
+            "update" => update(),
 
-        // cmds
-        "cmds" => cmds(),
+            // Commands with arguments
+            _ if command.starts_with("echo ") => println!("{}", &command[5..]),
+            _ if command.starts_with("sh ") => sh(&command[3..]),
+            _ if command.starts_with("web ") => web(&command[4..]),
+            _ if command.starts_with("expr ") => sh(command),
+            _ if command.starts_with("wait ") => wait(&command[5..]),
 
-        // ver
-        "ver" => ver(),
-
-        // Empty input
-        "" => (), // Do nothing on empty input
-
-        // help
-        "help" => help(),
-
-        // Shutdown
-        "shutdown" => {
-            let _ = run_shell_command("sudo shutdown now");
-        }
-
-        // reboot
-        "restart" => {
-            let _ = run_shell_command("sudo reboot");
-        }
-
-        // things with extra syntax
-
-        // echo
-        "echo" => println!("Usage: echo <text>"),
-
-        // Web
-        "web" => println!("Usage: web <page>"),
-
-        // sh
-        "sh" => println!("Usage: sh <command>"),
-
-        // expr
-        "expr" => println!("Usage: expr <equation>"),
-
-        // Echo
-        _ if input.starts_with("echo ") => {
-            let echo_content = &input[5..]; // Strip "echo " from the input
-            println!("{}", echo_content); // Display the echo content
-        }
-
-        // Shell command execution
-        _ if input.starts_with("sh ") => {
-            let cmd = &input[3..];
-            sh(cmd); // Run the shell command
-        }
-
-        // Open a web page
-        _ if input.starts_with("web ") => {
-            let page = &input[4..];
-            web(page); // Run the shell command
-        }
-
-        // expr
-        _ if input.starts_with("expr ") => {
-            sh(input);
-        }
-
-        _ => {
-            println!("{}: command not found", input);
+            _ => println!("{}: command not found", command),
         }
     }
 }
 
+fn wait(time: &str) {
+    let cmd = format!("sleep {}", time);
+    run_shell_command(&cmd);
+}
+
+fn update() {
+    if detect_package_manager() == "apt" || detect_package_manager() == "dnf" {
+        run_shell_command(&format!("sudo {} update", detect_package_manager()));
+    } else {
+        run_shell_command("sudo pacman -Syu");
+    }
+}
+
 fn web(url: &str) {
-    #[cfg(target_os = "linux")]
     Command::new("xdg-open")
         .arg(url)
         .spawn()
@@ -95,7 +65,8 @@ fn web(url: &str) {
 }
 
 fn ver() {
-    println!("\nRusterminal version: {}\n", version);
+    println!("\nRusterminal version: {}", VERSION);
+    println!("Rust version: {}", rustc_version::version().unwrap());
 
     // Path to the Python file
     let python_script = "./ver.py"; // Replace with your Python file name
@@ -104,8 +75,6 @@ fn ver() {
     let _ = Command::new("python3") // or "python3"
         .arg(python_script)
         .status(); // Run the command without checking status
-
-    println!();
 }
 
 fn sh(cmd: &str) {
@@ -119,33 +88,8 @@ fn sh(cmd: &str) {
         .status(); // Use `.status()` instead of `.output()`
 }
 
-fn cmds() {
-    println!();
-
-    let lines = [
-        "clear",
-        "exit",
-        "cmds",
-        "help",
-        "echo <text>",
-        "sh <command>",
-        "expr <equation>",
-        "restart",
-        "shutdown",
-        "ver",
-    ];
-
-    for line in lines.iter() {
-        println!("{}", line);
-    }
-
-    println!();
-}
-
 fn run_shell_command(cmd: &str) {
-    if cmd.trim().is_empty() {
-        return;
-    }
+    if cmd.trim().is_empty() { return; }
 
     // Use a shell (`sh -c`) so multi-word commands and colors work properly
     let _ = Command::new("sh")
@@ -157,13 +101,54 @@ fn run_shell_command(cmd: &str) {
         .status(); // Run the command and wait
 }
 
+fn detect_package_manager() -> String {
+    let package_managers = [
+        ("pacman", "pacman --version"),
+        ("apt", "apt --version"),
+        ("dnf", "dnf --version"),
+    ];
+
+    for (packman, command) in &package_managers {
+        if Command::new("sh").arg("-c").arg(command).output().is_ok() {
+            return packman.to_string();
+        }
+    }
+
+    "Unknown".to_string() // If the package manager can't be detected
+}
+
 fn help() {
-    println!("Welcome to Rusterminal {}!", version);
+    println!("Welcome to Rusterminal {}!", VERSION);
     println!("Type \"cmds\" for a list of commands!\n")
 }
 
+fn cmds() {
+    let lines: [&str; 16] = [
+        "",
+        "clear",
+        "exit",
+        "cmds",
+        "help",
+        "echo <text>",
+        "sh <command>",
+        "expr <equation>",
+        "restart",
+        "shutdown",
+        "ver",
+        "reload",
+        "uptime",
+        "update",
+        "python / python3",
+        "",
+    ];
+
+    for line in lines.iter() {
+        println!("{}", line);
+    }
+}
+
 fn main() {
-    // Attempt to clear the screen, ignoring errors
+    // Attempt to clear the screen
     run_shell_command("clear");
 
     if env::consts::OS == "linux" {
@@ -173,7 +158,13 @@ fn main() {
         exit(0);
     }
 
-    println!();
+    if matches!(detect_package_manager().as_str(), "apt" | "dnf" | "pacman") {
+        // Do nothing if a supported package manager
+    } else {
+        println!("Unsupported package manager! Rusterminal only supports Apt, Dnf, and Pacman.");
+        exit(0);
+    }
+
     help();
 
     loop {
