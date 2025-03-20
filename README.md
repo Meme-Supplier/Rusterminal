@@ -1,6 +1,10 @@
 # Rusterminal - v0.1.2
 My old project, PYShell, but rewritten in Rust.
 
+# Tested on:
+
+- Arch Linux
+
 # Install dependencies:
 
 ## Install the lastest Rust version:
