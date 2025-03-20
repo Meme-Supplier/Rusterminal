@@ -19,3 +19,7 @@
 - "wait" command
 - Added more info to the "ver" command
 - Bug fixes
+
+# v0.1.35
+- Bug fixes regarding the "update" command
+- You can now install Rusterminal
