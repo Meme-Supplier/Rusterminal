@@ -1,0 +1,21 @@
+# v0.1.1
+- quick fixes
+- When you enter a command that needs multiple syntaxes, it will tell you the usage
+
+# v0.1.2
+- Fixed issues with interactive commands
+- Misc big fixes
+- Cleaned up code
+- "Ver" command
+- "web" command
+- Removed pointless code
+
+# v0.1.3
+- added "reload" command
+- Code cleanup/optimizations
+- "uptime" command
+- "update" command
+- Added the ability to use "&&" to use multiple commands at a time
+- "wait" command
+- Added more info to the "ver" command
+- Bug fixes
