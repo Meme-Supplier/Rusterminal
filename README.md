@@ -40,11 +40,11 @@ My old project, PYShell, but rewritten in Rust.
 
 # To run:
 
-## 1. clone the repo:
+## 1. Clone the repo:
 
 `git clone https://github.com/Meme-Supplier/Rusterminal.git`
 
-## 2. Navigate ot the folder
+## 2. Navigate to the folder
 
 `cd ~/Rusterminal`
 
