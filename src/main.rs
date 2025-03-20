@@ -11,7 +11,7 @@ use std::env;
 use std::io::{self, Write};
 use std::process::{exit, Command, Stdio};
 
-static VERSION: &str = "v0.1.3";
+static VERSION: &str = "v0.1.35";
 
 #[cfg(target_os = "linux")]
 
@@ -31,6 +31,7 @@ fn process_input(input: &str) {
             "uptime" => run_shell_command("uptime"),
             "python" | "python3" => run_shell_command("python3"),
             "update" => update(),
+            "xray" => xray(),
 
             // Commands with arguments
             _ if command.starts_with("echo ") => println!("{}", &command[5..]),
@@ -44,16 +45,22 @@ fn process_input(input: &str) {
     }
 }
 
+fn xray() {
+    run_shell_command("nano ./main.rs");
+}
+
 fn wait(time: &str) {
     let cmd = format!("sleep {}", time);
     run_shell_command(&cmd);
 }
 
 fn update() {
-    if detect_package_manager() == "apt" || detect_package_manager() == "dnf" {
-        run_shell_command(&format!("sudo {} update", detect_package_manager()));
-    } else {
-        run_shell_command("sudo pacman -Syu");
+    if detect_package_manager().as_str() == "apt" { // Debian/Ubuntu
+        run_shell_command("sudo apt update");
+    } else if detect_package_manager().as_str() == "dnf" { // Fedora
+        run_shell_command("sudo dnf update");
+    } else { // Arch
+        run_shell_command("sudo pacman -Syu")
     }
 }
 
@@ -123,7 +130,7 @@ fn help() {
 }
 
 fn cmds() {
-    let lines: [&str; 16] = [
+    let lines: [&str; 17] = [
         "",
         "clear",
         "exit",
@@ -139,6 +146,7 @@ fn cmds() {
         "uptime",
         "update",
         "python / python3",
+        "xray",
         "",
     ];
 
