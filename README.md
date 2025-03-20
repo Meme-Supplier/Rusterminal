@@ -31,3 +31,23 @@ My old project, PYShell, but rewritten in Rust.
 `rustc --version`
 
 `cargo --version`
+
+## Install Python (May already be installed)
+
+**Check with:**
+
+`python --version`
+
+# To run:
+
+## 1. clone the repo:
+
+`git clone https://github.com/Meme-Supplier/Rusterminal.git`
+
+## 2. Navigate ot the folder
+
+`cd ~/Rusterminal`
+
+## 3. Run rusterminal
+
+`cargo run`
