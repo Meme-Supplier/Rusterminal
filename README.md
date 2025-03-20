@@ -4,6 +4,7 @@ My old project, PYShell, but rewritten in Rust.
 # Tested on:
 
 - Arch Linux
+- Linux Mint
 
 # Install dependencies:
 
@@ -40,7 +41,7 @@ My old project, PYShell, but rewritten in Rust.
 
 **Check with:**
 
-`python --version`
+`python3 --version`
 
 # To run:
 
@@ -48,9 +49,9 @@ My old project, PYShell, but rewritten in Rust.
 
 `git clone https://github.com/Meme-Supplier/Rusterminal.git`
 
-## 2. Navigate to the folder
+## 2. Navigate to the source
 
-`cd ~/Rusterminal`
+`cd ~/Rusterminal/src`
 
 ## 3. Run rusterminal
 
