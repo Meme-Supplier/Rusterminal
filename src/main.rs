@@ -35,7 +35,7 @@ fn process_input(input: &str) {
             "uptime" => run_shell_command("uptime"),
             "python" | "python3" => run_shell_command("python3"),
             "update" => update(),
-            "xray" => {run_shell_command("nano ~/rusterminal/src/main.rs"); exit(0);}
+            "xray" => {run_shell_command("nano ~/rusterminal/src/main.rs && exit"); exit(0);}
             "uninstall" => run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh"),
             "rmtitle" => set_window_title("Rusterminal"),
 
