@@ -35,7 +35,7 @@ fn process_input(input: &str) {
             "uptime" => run_shell_command("uptime"),
             "python" | "python3" => run_shell_command("python3"),
             "update" => update(),
-            "xray" => run_shell_command("nano main.rs"),
+            "xray" => {run_shell_command("nano ~/rusterminal/src/main.rs"); exit(0);}
             "uninstall" => run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh"),
             "rmtitle" => set_window_title("Rusterminal"),
 
@@ -164,13 +164,15 @@ fn ver() {
     println!("\nRusterminal version: {}", VERSION);
     println!("Rust version: {}", rustc_version::version().unwrap());
 
-    // Path to the Python file
-    let python_script = "~/rusterminal/src/ver.py"; // Replace with your Python file name
+    // Resolve home directory
+    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+    let python_script = format!("{}/rusterminal/src/ver.py", home_dir);
 
-    // Run the Python script using 'python' or 'python3'
-    let _ = Command::new("python3") // or "python3"
+    // Run the Python script using 'python3'
+    let _ = Command::new("python3")
         .arg(python_script)
-        .status(); // Run the command without checking status
+        .status()
+        .expect("Failed to execute Python script");
 }
 
 fn sh(cmd: &str) {
