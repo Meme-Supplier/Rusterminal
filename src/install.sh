@@ -72,5 +72,7 @@ cp Cargo.lock Cargo.toml ~/rusterminal/
 chmod +x ~/rusterminal/src/launch.sh
 sudo ln -sf ~/rusterminal/src/launch.sh /usr/local/bin/rusterminal
 
+sudo rm -rf ~/Rusterminal
+
 echo -e "Installed Rusterminal! Type \"Rusterminal\" to begin!"
 read
