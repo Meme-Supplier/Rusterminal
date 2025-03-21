@@ -11,27 +11,46 @@ use std::env;
 use std::io::{self, Write};
 use std::process::{exit, Command, Stdio};
 
-static VERSION: &str = "v0.1.35";
+static VERSION: &str = "v0.1.4";
 
 #[cfg(target_os = "linux")]
 
 fn process_input(input: &str) {
     for command in input.split("&&").map(|s| s.trim()) {
-        if command.is_empty() { continue; }
+        if command.is_empty() {
+            continue;
+        }
 
         match command {
             "clear" => run_shell_command("clear"),
-            "exit" => { exit(0); }
+            "exit" => {
+                exit(0);
+            }
             "cmds" => cmds(),
             "ver" => ver(),
-            "reload" => run_shell_command("cargo run main.rs"),
+            "reload" | "rusterminal" => run_shell_command("cargo run main.rs"),
             "help" => help(),
             "shutdown" => run_shell_command("sudo shutdown now"),
             "restart" => run_shell_command("sudo reboot"),
             "uptime" => run_shell_command("uptime"),
             "python" | "python3" => run_shell_command("python3"),
             "update" => update(),
-            "xray" => xray(),
+            "xray" => run_shell_command("nano main.rs"),
+            "uninstall" => run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh"),
+            "rmtitle" => set_window_title("Rusterminal"),
+
+            // Commands that require syntax
+            "echo" => println!("Usage: echo <text>"),
+            "sh" => println!("Usage: sh <command>"),
+            "web" => println!("Usage: web <website>"),
+            "expr" => println!("Usage: expr <equation>"),
+            "wait" => println!("Usage: wait <time>"),
+            "ping" => println!("Usage: ping <domain>"),
+            "ls" => println!("Usage: ls <directory>"),
+            "del" => println!("Usage: del <flag> <file/directory>"),
+            "title" => println!("Usage: title <string>"),
+            "edit" => println!("Usage: edit <path>"),
+            "copy" => println!("Usage: copy <flag> <path>"),
 
             // Commands with arguments
             _ if command.starts_with("echo ") => println!("{}", &command[5..]),
@@ -39,14 +58,81 @@ fn process_input(input: &str) {
             _ if command.starts_with("web ") => web(&command[4..]),
             _ if command.starts_with("expr ") => sh(command),
             _ if command.starts_with("wait ") => wait(&command[5..]),
+            _ if command.starts_with("ping ") => ping(&command[5..]),
+            _ if command.starts_with("ls ") => ls(&command[3..]),
+            _ if command.starts_with("del ") => del(&command[4..]),
+            _ if command.starts_with("title ") => set_window_title(&command[6..]),
+            _ if command.starts_with("edit ") => edit(&command[5..]),
+            _ if command.starts_with("copy ") => copy(&command[5..]),
 
             _ => println!("{}: command not found", command),
         }
     }
 }
 
-fn xray() {
-    run_shell_command("nano ./main.rs");
+fn cmds() {
+    let lines: [&str; 26] = [
+        "",
+        "clear",
+        "exit",
+        "cmds",
+        "help",
+        "echo <text>",
+        "sh <command>",
+        "expr <equation>",
+        "restart",
+        "shutdown",
+        "ver",
+        "reload / rusterminal",
+        "uptime",
+        "update",
+        "python / python3",
+        "xray",
+        "uninstall",
+        "wait",
+        "ping <site>",
+        "ls <path>",
+        "del <path>",
+        "title <title>",
+        "rmtitle",
+        "edit <path>",
+        "copy <path>",
+        "",
+    ];
+
+    for line in lines.iter() {
+        println!("{}", line);
+    }
+}
+
+fn copy(x: &str) {
+    let y = format!("cp {}", x);
+    run_shell_command(&y);
+}
+
+fn edit(x: &str) {
+    let y = format!("nano {}", x);
+    run_shell_command(&y);
+}
+
+fn set_window_title(title: &str) {
+    print!("\x1b]0;{}\x07", title);
+    io::stdout().flush().unwrap(); // Ensure the escape sequence is sent immediately
+}
+
+fn del(x: &str) {
+    let y = format!("del {}", x);
+    run_shell_command(&y);
+}
+
+fn ls(x: &str) {
+    let y = format!("ls {}", x);
+    run_shell_command(&y);
+}
+
+fn ping(add: &str) {
+    let addr = format!("ping {}", add);
+    run_shell_command(&addr);
 }
 
 fn wait(time: &str) {
@@ -55,11 +141,14 @@ fn wait(time: &str) {
 }
 
 fn update() {
-    if detect_package_manager().as_str() == "apt" { // Debian/Ubuntu
+    if detect_package_manager().as_str() == "apt" {
+        // Debian/Ubuntu
         run_shell_command("sudo apt update");
-    } else if detect_package_manager().as_str() == "dnf" { // Fedora
+    } else if detect_package_manager().as_str() == "dnf" {
+        // Fedora
         run_shell_command("sudo dnf update");
-    } else { // Arch
+    } else {
+        // Arch
         run_shell_command("sudo pacman -Syu")
     }
 }
@@ -76,7 +165,7 @@ fn ver() {
     println!("Rust version: {}", rustc_version::version().unwrap());
 
     // Path to the Python file
-    let python_script = "./ver.py"; // Replace with your Python file name
+    let python_script = "~/rusterminal/src/ver.py"; // Replace with your Python file name
 
     // Run the Python script using 'python' or 'python3'
     let _ = Command::new("python3") // or "python3"
@@ -96,7 +185,9 @@ fn sh(cmd: &str) {
 }
 
 fn run_shell_command(cmd: &str) {
-    if cmd.trim().is_empty() { return; }
+    if cmd.trim().is_empty() {
+        return;
+    }
 
     // Use a shell (`sh -c`) so multi-word commands and colors work properly
     let _ = Command::new("sh")
@@ -129,32 +220,6 @@ fn help() {
     println!("Type \"cmds\" for a list of commands!\n")
 }
 
-fn cmds() {
-    let lines: [&str; 17] = [
-        "",
-        "clear",
-        "exit",
-        "cmds",
-        "help",
-        "echo <text>",
-        "sh <command>",
-        "expr <equation>",
-        "restart",
-        "shutdown",
-        "ver",
-        "reload",
-        "uptime",
-        "update",
-        "python / python3",
-        "xray",
-        "",
-    ];
-
-    for line in lines.iter() {
-        println!("{}", line);
-    }
-}
-
 fn main() {
     // Attempt to clear the screen
     run_shell_command("clear");
@@ -173,6 +238,7 @@ fn main() {
         exit(0);
     }
 
+    set_window_title("Rusterminal");
     help();
 
     loop {
