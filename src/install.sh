@@ -29,7 +29,12 @@ case "$answer" in
     [Nn]) exit ;;
 esac
 
-mkdir -p ~/.rusterminal
+if [ -d ~/pyshell ]; then
+    echo -e "${CYAN}\nRemoving \"$HOME/rusterminal/\"...${RESET}"
+    sudo rm -rf ~/rusterminal/
+fi
+
+mkdir -p ~/rusterminal
 
 echo "Installing dependencies..."
 
@@ -61,11 +66,11 @@ fi
 
 cd ~/Rusterminal || exit
 
-cp -r src ~/.rusterminal/
-cp Cargo.lock Cargo.toml ~/.rusterminal/
+cp -r src ~/rusterminal/
+cp Cargo.lock Cargo.toml ~/rusterminal/
 
-chmod +x ~/.rusterminal/src/launch.sh
-sudo ln -sf ~/.rusterminal/src/launch.sh /usr/local/bin/rusterminal
+chmod +x ~/rusterminal/src/launch.sh
+sudo ln -sf ~/rusterminal/src/launch.sh /usr/local/bin/rusterminal
 
-echo "Installed!"
+echo -e "Installed Rusterminal! Type \"Rusterminal\" to begin!"
 read
