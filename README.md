@@ -1,4 +1,4 @@
-# Rusterminal - v0.1.35
+# Rusterminal - v0.1.4
 My old project, PYShell, but rewritten in Rust.
 
 # Tested on:
