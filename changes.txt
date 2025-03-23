@@ -23,3 +23,14 @@
 # v0.1.35
 - Bug fixes regarding the "update" command
 - You can now install Rusterminal
+
+# v0.1.4
+- "uninstall" command
+- Bug fixes
+- "ls", "del", "ping", "title", "edit", "copy", "rmtitle" commands
+
+# v0.1.5
+- "funcs.rs" now contains the functions
+- "uninstall" command fixed
+- Bug fixes
+- "Upgrade" command
