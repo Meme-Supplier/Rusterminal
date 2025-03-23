@@ -1,5 +1,5 @@
 # Rusterminal - v0.1.5
-My old project, PYShell, but rewritten in Rust.
+Basically PYShell but rewritten in rust
 
 # Tested on:
 
@@ -19,3 +19,18 @@ My old project, PYShell, but rewritten in Rust.
 ## 3. Install Rusterminal
 
 `bash install.sh`
+
+# Uninstall:
+
+## Method 1:
+`rusterminal`
+
+`uninstall`
+
+## Method 2: (If you can't launch Rusterminal)
+
+`cd ~/Rusterminal/src`
+
+`chmod +x uninstall.sh`
+
+`./uninstall.sh`
