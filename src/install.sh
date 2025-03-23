@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 2025 Meme Supplier
+# memesupplierbusiness@gmail.com
+# Maintained by Meme Supplier
+
 echo
 
 detect_package_manager() {
