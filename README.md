@@ -5,6 +5,7 @@ Basically PYShell but rewritten in rust
 
 - Arch Linux
 - Linux Mint
+- Fedora
 
 # Install:
 
