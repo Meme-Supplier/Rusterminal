@@ -10,12 +10,12 @@ use std::env;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.1.5";
+static VERSION: &str = "v0.1.6";
 
 #[cfg(target_os = "linux")]
 
 pub fn cmds() {
-    let lines: [&str; 27] = [
+    let lines: [&str; 28] = [
         "",
         "clear",
         "exit",
@@ -27,7 +27,6 @@ pub fn cmds() {
         "restart",
         "shutdown",
         "ver",
-        "reload / rusterminal",
         "uptime",
         "update",
         "python / python3",
@@ -42,11 +41,44 @@ pub fn cmds() {
         "edit <path>",
         "copy <path>",
         "upgrade",
+        "clean",
+        "newdir <path>",
         "",
     ];
 
     for line in lines.iter() {
         println!("{}", line);
+    }
+}
+
+pub fn new_dir(x: &str) {
+    let y = format!("mkdir {}", x);
+    run_shell_command(&y);
+}
+
+pub fn input(x: &str) {
+    let mut input = String::new();
+
+    // Print the prompt and flush stdout
+    println!("{x}");
+    io::stdout().flush().expect("Failed to flush");
+
+    // Read user input
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
+}
+
+pub fn clean() {
+    if detect_package_manager().as_str() == "apt" {
+        // Debian/Ubuntu
+        run_shell_command("sudo apt autoremove -y");
+    } else if detect_package_manager().as_str() == "dnf" {
+        // Fedora
+        run_shell_command("sudo dnf autoremove -y");
+    } else {
+        // Arch
+        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm")
     }
 }
 
@@ -66,7 +98,7 @@ pub fn set_window_title(title: &str) {
 }
 
 pub fn del(x: &str) {
-    let y = format!("del {}", x);
+    let y = format!("rm {}", x);
     run_shell_command(&y);
 }
 
@@ -86,15 +118,17 @@ pub fn wait(time: &str) {
 }
 
 pub fn update() {
-    if detect_package_manager().as_str() == "apt" {
+    let package_manager = detect_package_manager();
+
+    if package_manager == "apt" {
         // Debian/Ubuntu
         run_shell_command("sudo apt update");
-    } else if detect_package_manager().as_str() == "dnf" {
+    } else if package_manager == "dnf" {
         // Fedora
         run_shell_command("sudo dnf update");
     } else {
         // Arch
-        run_shell_command("sudo pacman -Syu")
+        run_shell_command("sudo pacman -Syu");
     }
 }
 
@@ -154,8 +188,10 @@ pub fn detect_package_manager() -> String {
     ];
 
     for (packman, command) in &package_managers {
-        if Command::new("sh").arg("-c").arg(command).output().is_ok() {
-            return packman.to_string();
+        if let Ok(output) = Command::new("sh").arg("-c").arg(command).output() {
+            if output.status.success() {
+                return packman.to_string();
+            }
         }
     }
 
@@ -165,8 +201,4 @@ pub fn detect_package_manager() -> String {
 pub fn help() {
     println!("Welcome to Rusterminal {}!", VERSION);
     println!("Type \"cmds\" for a list of commands!\n")
-}
-
-pub fn reload() {
-    run_shell_command("exit && cargo run main.rs");
 }
