@@ -45,13 +45,16 @@ echo "Installing dependencies..."
 if [[ "$PM" == "pacman" ]]; then
     sudo pacman -Syu --noconfirm
     sudo pacman -S --noconfirm rustup
+    source $HOME/.cargo/env
 elif [[ "$PM" == "apt" ]]; then
     sudo apt update -y
     sudo apt install -y curl build-essential
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-elif [[ "$PM" == "dnf" ]]; then
+elif [[ "$PM" == "dnf" ]]; 
     sudo dnf update -y
-    sudo dnf install -y rustup
+    sudo dnf install -y curl rustup gcc glibc-devel clang llvm make cmake
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source $HOME/.cargo/env
 else
     echo "Error: Unsupported package manager."
     exit 1
@@ -78,5 +81,11 @@ sudo ln -sf ~/rusterminal/src/launch.sh /usr/local/bin/rusterminal
 
 sudo rm -rf ~/Rusterminal
 
-echo -e "Installed Rusterminal! Type \"Rusterminal\" to begin!"
-read
+echo -e "Installed Rusterminal!\n"
+
+echo -e "Do you want to launch Rusterminal?\n(Y or N)"
+read -r answer
+
+case "$answer" in
+    [Yy]) rusterminal ;;
+esac
