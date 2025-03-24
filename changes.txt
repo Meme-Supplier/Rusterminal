@@ -34,3 +34,10 @@
 - "uninstall" command fixed
 - Bug fixes
 - "Upgrade" command
+
+# v0.1.6
+- Better compatibility for Fedora systems
+- Code optimizations
+- "clean", "in", "newdir" commands
+- Removed "reload" command
+- You are now prompted if you want to launch Rusterminal after upgrading
