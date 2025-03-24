@@ -17,16 +17,13 @@ mod funcs;
 
 fn process_input(input: &str) {
     for command in input.split("&&").map(|s| s.trim()) {
-        if command.is_empty() {
-            continue;
-        }
+        if command.is_empty() { continue; }
 
         match command {
             "clear" => funcs::run_shell_command("clear"),
             "exit" => exit(0),
             "cmds" => funcs::cmds(),
             "ver" => funcs::ver(),
-            "reload" | "rusterminal" => funcs::reload(),
             "help" => funcs::help(),
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
             "restart" => funcs::run_shell_command("sudo reboot"),
@@ -34,9 +31,17 @@ fn process_input(input: &str) {
             "python" | "python3" => funcs::run_shell_command("python3"),
             "update" => funcs::update(),
             "xray" => funcs::run_shell_command("nano ~/rusterminal/src/main.rs"),
-            "uninstall" => {funcs::run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh"); process_input("exit");},
             "rmtitle" => funcs::set_window_title("Rusterminal"),
-            "upgrade" => {funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh"); process_input("exit");},
+            "clean" => funcs::clean(),
+
+            "upgrade" => {
+                funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh");
+                process_input("exit");
+            }
+            "uninstall" => {
+                funcs::run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh");
+                process_input("exit");
+            }
 
             // Commands that require syntax
             "echo" => println!("Usage: echo <text>"),
@@ -50,6 +55,7 @@ fn process_input(input: &str) {
             "title" => println!("Usage: title <string>"),
             "edit" => println!("Usage: edit <path>"),
             "copy" => println!("Usage: copy <flag> <path>"),
+            "newdir" => println!("Usage: newdir <path>"),
 
             // Commands with arguments
             _ if command.starts_with("echo ") => println!("{}", &command[5..]),
@@ -63,6 +69,8 @@ fn process_input(input: &str) {
             _ if command.starts_with("title ") => funcs::set_window_title(&command[6..]),
             _ if command.starts_with("edit ") => funcs::edit(&command[5..]),
             _ if command.starts_with("copy ") => funcs::copy(&command[5..]),
+            _ if command.starts_with("in ") => funcs::input(&command[3..]),
+            _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
 
             _ => println!("{}: command not found", command),
         }
@@ -80,7 +88,10 @@ fn main() {
         exit(0);
     }
 
-    if matches!(funcs::detect_package_manager().as_str(), "apt" | "dnf" | "pacman") {
+    if matches!(
+        funcs::detect_package_manager().as_str(),
+        "apt" | "dnf" | "pacman"
+    ) {
         // Do nothing if a supported package manager
     } else {
         println!("Unsupported package manager! Rusterminal only supports Apt, Dnf, and Pacman.");
