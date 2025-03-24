@@ -22,4 +22,10 @@ sudo chmod +x install.sh
 source ~/.bashrc
 
 echo "Rusterminal successfully updated!"
-read
+
+echo -e "Do you want to launch Rusterminal?\n(Y or N)"
+read -r answer
+
+case "$answer" in
+    [Yy]) rusterminal ;;
+esac
