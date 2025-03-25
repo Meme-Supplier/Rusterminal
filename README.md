@@ -1,5 +1,5 @@
 # Rusterminal - v0.1.6
-Basically PYShell but rewritten in rust
+Basically PYShell but rewritten in Rust
 
 # Tested on:
 
