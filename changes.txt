@@ -41,3 +41,11 @@
 - "clean", "in", "newdir" commands
 - Removed "reload" command
 - You are now prompted if you want to launch Rusterminal after upgrading
+
+# v0.1.7
+- Fixed a bug that the Pacman package manager is only supported. Now users using Apt and Dnf can use it as well.
+- "cmds" command is now located in "/src/cmds.rs"
+- Fixed typos
+- Commands listed in the "cmds" command are now in alphebetical order
+- Code optimizations
+- Renamed "sh" command to "run"
