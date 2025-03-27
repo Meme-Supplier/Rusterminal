@@ -1,4 +1,5 @@
 #!/usr/bin/env rust-script
+#[cfg(target_os = "linux")]
 
 /*
 2025 Meme Supplier
@@ -11,18 +12,22 @@ use std::env;
 use std::io::{self, Write};
 use std::process::exit;
 
+mod cmds;
 mod funcs;
 
 #[cfg(target_os = "linux")]
 
 fn process_input(input: &str) {
+
     for command in input.split("&&").map(|s| s.trim()) {
-        if command.is_empty() { continue; }
+        if command.is_empty() {
+            continue;
+        }
 
         match command {
             "clear" => funcs::run_shell_command("clear"),
             "exit" => exit(0),
-            "cmds" => funcs::cmds(),
+            "cmds" => cmds::list(),
             "ver" => funcs::ver(),
             "help" => funcs::help(),
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
@@ -45,7 +50,7 @@ fn process_input(input: &str) {
 
             // Commands that require syntax
             "echo" => println!("Usage: echo <text>"),
-            "sh" => println!("Usage: sh <command>"),
+            "run" => println!("Usage: run <command>"),
             "web" => println!("Usage: web <website>"),
             "expr" => println!("Usage: expr <equation>"),
             "wait" => println!("Usage: wait <time>"),
@@ -59,9 +64,9 @@ fn process_input(input: &str) {
 
             // Commands with arguments
             _ if command.starts_with("echo ") => println!("{}", &command[5..]),
-            _ if command.starts_with("sh ") => funcs::sh(&command[3..]),
+            _ if command.starts_with("run ") => funcs::run(&command[3..]),
             _ if command.starts_with("web ") => funcs::web(&command[4..]),
-            _ if command.starts_with("expr ") => funcs::sh(command),
+            _ if command.starts_with("expr ") => funcs::run(command),
             _ if command.starts_with("wait ") => funcs::wait(&command[5..]),
             _ if command.starts_with("ping ") => funcs::ping(&command[5..]),
             _ if command.starts_with("ls ") => funcs::ls(&command[3..]),
@@ -72,13 +77,12 @@ fn process_input(input: &str) {
             _ if command.starts_with("in ") => funcs::input(&command[3..]),
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
 
-            _ => println!("{}: command not found", command),
+            _ => println!("{command}: command not found"),
         }
     }
 }
 
 fn main() {
-    // Attempt to clear the screen
     funcs::run_shell_command("clear");
 
     if env::consts::OS == "linux" {
@@ -88,15 +92,10 @@ fn main() {
         exit(0);
     }
 
-    if matches!(
-        funcs::detect_package_manager().as_str(),
-        "apt" | "dnf" | "pacman"
-    ) {
-        // Do nothing if a supported package manager
-    } else {
-        println!("Unsupported package manager! Rusterminal only supports Apt, Dnf, and Pacman.");
-        exit(0);
-    }
+    if funcs::detect_package_manager() == "apt"
+        || funcs::detect_package_manager() == "dnf"
+        || funcs::detect_package_manager() == "pacman"
+    {}
 
     funcs::set_window_title("Rusterminal");
     funcs::help();
