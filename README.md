@@ -7,6 +7,18 @@ Basically my older project PYShell, but rewritten in Rust
 - Linux Mint
 - Fedora
 
+## For **Linux** machines only.
+### Supported distros:
+- **Debian**-based
+- **Ubuntu**-based
+- **Fedora**-based
+- **Arch**-based
+
+**And if you have one of the package managers listed:**
+- Apt
+- Dnf
+- Pacman/Yay
+
 # Install:
 
 ## 1. Clone the repo:
