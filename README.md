@@ -14,7 +14,7 @@ Basically my older project PYShell, but rewritten in Rust
 - **Fedora**-based
 - **Arch**-based
 
-**And if you have one of the package managers listed:**
+## And if you have one of the package managers listed:
 - Apt
 - Dnf
 - Pacman/Yay
