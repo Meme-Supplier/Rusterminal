@@ -1,24 +1,25 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
+//! ```cargo
+//! [dependencies]
+//! rustyline = "12"
+//! gethostname = "0.4"
+//! ```
 
+#[cfg(target_os = "linux")]
 /*
 2025 Meme Supplier
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier
 */
-
 use gethostname::gethostname;
+use rustyline::error::ReadlineError;
 use std::env;
-use std::io::{self, Write};
 use std::process::exit;
 
 mod cmds;
 mod funcs;
 
-#[cfg(target_os = "linux")]
-
 fn process_input(input: &str) {
-
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
             continue;
@@ -38,6 +39,9 @@ fn process_input(input: &str) {
             "xray" => funcs::run_shell_command("nano ~/rusterminal/src/main.rs"),
             "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
+            "credits" => funcs::credits(),
+            "legacy" => funcs::run_shell_command("cd ~/ && git clone https://github.com/Meme-Supplier/PYShell.git && cd ~/PYShell && bash installer.sh"),
+            "fmtdsk" => funcs::fmtdsk(),
 
             "upgrade" => {
                 funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh");
@@ -48,7 +52,6 @@ fn process_input(input: &str) {
                 process_input("exit");
             }
 
-            // Commands that require syntax
             "echo" => println!("Usage: echo <text>"),
             "run" => println!("Usage: run <command>"),
             "web" => println!("Usage: web <website>"),
@@ -62,7 +65,6 @@ fn process_input(input: &str) {
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
 
-            // Commands with arguments
             _ if command.starts_with("echo ") => println!("{}", &command[5..]),
             _ if command.starts_with("run ") => funcs::run(&command[3..]),
             _ if command.starts_with("web ") => funcs::web(&command[4..]),
@@ -86,7 +88,7 @@ fn main() {
     funcs::run_shell_command("clear");
 
     if env::consts::OS == "linux" {
-        // Do nothing if it's Linux
+        // OK
     } else {
         println!("Rusterminal is designed for Linux only!\nExiting...");
         exit(0);
@@ -100,23 +102,33 @@ fn main() {
     funcs::set_window_title("Rusterminal");
     funcs::help();
 
-    loop {
-        let mut input = String::new();
+    use rustyline::{Config, DefaultEditor};
 
-        // Print the prompt and flush stdout
-        print!(
+    let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
+
+    loop {
+        let prompt = format!(
             "{}@{}$~: ",
             gethostname().to_string_lossy(),
             gethostname().to_string_lossy()
         );
-        io::stdout().flush().expect("Failed to flush");
 
-        // Read user input
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read line");
-
-        // Process the input
-        process_input(input.trim());
+        match rl.readline(&prompt) {
+            Ok(line) => {
+                let input = line.trim();
+                if !input.is_empty() {
+                    //rl.add_history_entry(input);
+                    process_input(input);
+                }
+            }
+            Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
+                println!("Exiting...");
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
     }
 }
