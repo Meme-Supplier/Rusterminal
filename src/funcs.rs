@@ -1,17 +1,30 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
-
 /*
 2025 Meme Supplier
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier
 */
-
 use std::env;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.1.7";
+static VERSION: &str = "v0.1.8";
+
+pub fn fmtdsk() {
+    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+    let python_script = format!("{home_dir}/rusterminal/src/diskfmt.py");
+
+    // Run the Python script using 'python3'
+    let _ = Command::new("python3")
+        .arg(python_script)
+        .status()
+        .expect("Failed to execute Python script");
+}
+
+pub fn credits() {
+    println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n");
+}
 
 pub fn new_dir(x: &str) {
     let y = format!("mkdir {x}");
@@ -45,8 +58,8 @@ pub fn clean() {
 }
 
 pub fn copy(x: &str) {
-    let y = format!("cp {x}");
-    run_shell_command(&y);
+    let command = format!("cp {x}");
+    run_shell_command(&command);
 }
 
 pub fn edit(x: &str) {
@@ -55,7 +68,7 @@ pub fn edit(x: &str) {
 }
 
 pub fn set_window_title(title: &str) {
-    print!("\x1b]0;{}\x07", title);
+    print!("\x1b]0;{title}\x07");
     io::stdout().flush().unwrap(); // Ensure the escape sequence is sent immediately
 }
 
@@ -124,11 +137,13 @@ pub fn run(cmd: &str) {
         .stdin(Stdio::inherit()) // Allows interactive commands like sudo
         .stdout(Stdio::inherit()) // Preserves colored output
         .stderr(Stdio::inherit()) // Preserves error messages
-        .status(); // Use `.status()` instead of `.output()`
+        .status();
 }
 
 pub fn run_shell_command(cmd: &str) {
-    if cmd.trim().is_empty() {return}
+    if cmd.trim().is_empty() {
+        return;
+    }
 
     // Use a shell (`sh -c`) so multi-word commands and colors work properly
     let _ = Command::new("sh")
