@@ -8,10 +8,11 @@ Maintained by Meme Supplier
 */
 
 pub fn list() {
-    let lines: [&str; 28] = [
+    let lines: [&str; 31] = [
         "",
         "clean",
         "clear",
+        "credits",
         "cmds",
         "copy <path>",
         "del <path>",
@@ -19,7 +20,9 @@ pub fn list() {
         "edit <path>",
         "exit",
         "expr <equation>",
+        "fmtdsk",
         "help",
+        "legacy",
         "ls <path>",
         "newdir <path>",
         "ping <site>",
@@ -40,6 +43,6 @@ pub fn list() {
     ];
 
     for line in lines.iter() {
-        println!("{}", line);
+        println!("{line}");
     }
 }
