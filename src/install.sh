@@ -44,19 +44,21 @@ echo "Installing dependencies..."
 
 if [[ "$PM" == "pacman" ]]; then
     sudo pacman -Syu --noconfirm
-    sudo pacman -S --noconfirm rustup
+    sudo pacman -S --noconfirm rustup dosfstools ntfs-3g nano python-colorama git
     source "$HOME/.cargo/env"
 elif [[ "$PM" == "apt" ]]; then
     sudo apt update -y
-    sudo apt install -y curl build-essential
+    sudo apt upgrade -y
+    sudo apt install -y curl build-essential dosfstools ntfs-3g nano python3-colorama git
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 elif [[ "$PM" == "dnf" ]]; then
     sudo dnf update -y
-    sudo dnf install -y curl rustup gcc glibc-devel clang llvm make cmake
+    sudo dnf install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano python3-colorama git
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source "$HOME/.cargo/env"
 else
     echo "Error: Unsupported package manager."
+    read
     exit 1
 fi
 
@@ -68,6 +70,7 @@ rustup default stable
 
 if [[ ! -d "$HOME/Rusterminal" ]]; then
     echo "Error: Rusterminal source directory not found!"
+    read
     exit 1
 fi
 
