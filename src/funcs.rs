@@ -1,15 +1,28 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
+
 /*
 2025 Meme Supplier
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier
 */
+
 use std::env;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.1.8";
+static VERSION: &str = "v0.1.9";
+
+pub fn xray() {
+    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+    let python_script = format!("{home_dir}/rusterminal/src/xray.py");
+
+    // Run the Python script using 'python3'
+    let _ = Command::new("python3")
+        .arg(python_script)
+        .status()
+        .expect("Failed to execute Python script");
+}
 
 pub fn fmtdsk() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -97,7 +110,7 @@ pub fn update() {
 
     if package_manager == "apt" {
         // Debian/Ubuntu
-        run_shell_command("sudo apt update");
+        run_shell_command("sudo apt update && sudo apt upgrade");
     } else if package_manager == "dnf" {
         // Fedora
         run_shell_command("sudo dnf update");
