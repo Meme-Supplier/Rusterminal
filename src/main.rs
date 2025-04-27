@@ -1,18 +1,15 @@
 #!/usr/bin/env rust-script
-//! ```cargo
-//! [dependencies]
-//! rustyline = "12"
-//! gethostname = "0.4"
-//! ```
-
 #[cfg(target_os = "linux")]
+
 /*
 2025 Meme Supplier
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier
 */
+
 use gethostname::gethostname;
 use rustyline::error::ReadlineError;
+use rustyline::{Config, DefaultEditor};
 use std::env;
 use std::process::exit;
 
@@ -36,7 +33,7 @@ fn process_input(input: &str) {
             "uptime" => funcs::run_shell_command("uptime"),
             "python" | "python3" => funcs::run_shell_command("python3"),
             "update" => funcs::update(),
-            "xray" => funcs::run_shell_command("nano ~/rusterminal/src/main.rs"),
+            "xray" => funcs::xray(),
             "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
             "credits" => funcs::credits(),
@@ -52,6 +49,7 @@ fn process_input(input: &str) {
                 process_input("exit");
             }
 
+            // Commands that require extra usage
             "echo" => println!("Usage: echo <text>"),
             "run" => println!("Usage: run <command>"),
             "web" => println!("Usage: web <website>"),
@@ -101,8 +99,6 @@ fn main() {
 
     funcs::set_window_title("Rusterminal");
     funcs::help();
-
-    use rustyline::{Config, DefaultEditor};
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
 
