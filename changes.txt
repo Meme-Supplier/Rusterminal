@@ -49,3 +49,22 @@
 - Commands listed in the "cmds" command are now in alphebetical order
 - Code optimizations
 - Renamed "sh" command to "run"
+
+# v0.1.8
+- "credits" command
+- "legacy" command
+- User input fixes- Bug fixes
+- "fmtdsk" command
+
+# v0.1.9
+- Bug fixes
+- Missing dependencies are now added through "install.sh"
+- Code optimizations
+- Improved "xray" command: You can now choose all of Rusterminal's files.
+
+# v0.2.0
+- Code optimizations
+- Working command history
+- "settings" command
+- You can now configure Rusterminal using the "settings" command.
+- Bug fixes
