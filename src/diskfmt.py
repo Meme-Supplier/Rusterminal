@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
+"""
+2025 Meme Supplier
+memesupplierbusiness@gmail.com
+Maintained by Meme Supplier
+"""
+
 import subprocess
 import sys
 import os
 import time
+import readline
 
-diskfmtver = "0.3.2"
+diskfmtver = "0.3.4"
+
 MAX_RETRIES = 5
 WAIT_TIME = 5  # seconds
 
@@ -18,29 +26,29 @@ def runShellCommand(command):
 
 def checkIfDeviceExists(drive):
     result = subprocess.run(
-        f"lsblk -p -n -o NAME | grep -w {drive}",
-        shell=True,
+        ["lsblk", "-p", "-n", "-o", "NAME"],
         capture_output=True,
         text=True
     )
-    return result.returncode == 0
+    return drive in result.stdout.splitlines()
 
 def getFirstPartition(drive):
     retries = 0
     while retries < MAX_RETRIES:
         result = subprocess.run(
-            f"lsblk -ln -o NAME {drive} | grep -E '[0-9]+$' | head -n 1",
-            shell=True,
+            ["lsblk", "-ln", "-o", "NAME,TYPE", drive],
             capture_output=True,
             text=True
         )
-        part_name = result.stdout.strip()
-        if part_name:
-            return f"/dev/{part_name}"
-        else:
-            print(f"Retrying to detect partition (Attempt {retries+1}/{MAX_RETRIES})...")
-            retries += 1
-            time.sleep(WAIT_TIME)
+        for line in result.stdout.strip().splitlines():
+            parts = line.split()
+            if len(parts) == 2 and parts[1] == "part":
+                part_name = parts[0]
+                return f"/dev/{part_name}"
+
+        print(f"Retrying to detect partition (Attempt {retries+1}/{MAX_RETRIES})...")
+        retries += 1
+        time.sleep(WAIT_TIME)
     print("Failed to detect partition after retries.")
     sys.exit(1)
 
@@ -70,13 +78,23 @@ def formatDisk(drive, name, fsys, ptable):
     partition = getFirstPartition(drive)
 
     print(f"Creating new {fsys.upper()} filesystem with label '{name}'...")
-    runShellCommand(f"sudo mkfs.{fsys} -L {name} {partition}")
+
+    if fsys == "vfat":
+        runShellCommand(f"sudo mkfs.vfat -F 32 -n {name} {partition}")
+    elif fsys == "ntfs":
+        runShellCommand(f"sudo mkfs.ntfs -f -L {name} {partition}")
+    else:
+        runShellCommand(f"sudo mkfs.{fsys} -L {name} {partition}")
 
     print("Mounting to /mnt...")
     runShellCommand(f"sudo mount {partition} /mnt")
 
     user = os.getenv("USER") or os.getlogin()
-    runShellCommand(f"sudo chown -R {user}:{user} /mnt")
+
+    if fsys == "ext4":
+        runShellCommand(f"sudo chown -R {user}:{user} /mnt")
+    else:
+        print(f"Skipping chown for filesystem {fsys.upper()} (not supported).")
 
 def main():
     print(f"Rusterminal Disk Formatter\nVersion: {diskfmtver}")
@@ -99,17 +117,18 @@ def main():
     print("2] MSDOS")
     table = input("Choice: ").strip()
 
-    if table == "1":
-        ptable = "gpt"
-    elif table == "2":
-        ptable = "msdos"
-    else:
-        print("Invalid option.")
-        sys.exit(1)
+    match table:
+        case '1':
+            ptable = "gpt"
+        case '2':
+            ptable = "msdos"
+        case _:
+            print("Invalid option.")
+            sys.exit(1)
 
     name = input("\nEnter disk label (no spaces): ").strip()
-    if " " in name:
-        print("Disk label cannot contain spaces.")
+    if " " in name or not name:
+        print("Disk label cannot contain spaces and must not be empty.")
         sys.exit(1)
 
     print("\nSelect filesystem type:")
@@ -125,7 +144,7 @@ def main():
             fsys = "vfat"
         case '3':
             fsys = "ntfs"
-        case _ :
+        case _:
             print("Invalid filesystem choice.")
             sys.exit(1)
 
