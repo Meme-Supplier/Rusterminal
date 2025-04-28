@@ -8,7 +8,7 @@ Maintained by Meme Supplier
 */
 
 pub fn list() {
-    let lines: [&str; 31] = [
+    let lines: [&str; 32] = [
         "",
         "clean",
         "clear",
@@ -30,6 +30,7 @@ pub fn list() {
         "run <command>",
         "restart",
         "rmtitle",
+        "settings",
         "shutdown",
         "title <title>",
         "uninstall",
