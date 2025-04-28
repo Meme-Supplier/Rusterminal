@@ -11,7 +11,7 @@ use std::env;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.1.9";
+static VERSION: &str = "v0.2.0";
 
 pub fn xray() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
