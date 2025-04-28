@@ -15,6 +15,7 @@ use std::process::exit;
 
 mod cmds;
 mod funcs;
+mod loadconfigs;
 
 fn process_input(input: &str) {
     for command in input.split("&&").map(|s| s.trim()) {
@@ -39,6 +40,7 @@ fn process_input(input: &str) {
             "credits" => funcs::credits(),
             "legacy" => funcs::run_shell_command("cd ~/ && git clone https://github.com/Meme-Supplier/PYShell.git && cd ~/PYShell && bash installer.sh"),
             "fmtdsk" => funcs::fmtdsk(),
+            "settings" => funcs::run_shell_command("nano ~/rusterminal/src/settings.conf && echo -e \"\nRestart Rusterminal for changes to take affect.\" && read"),
 
             "upgrade" => {
                 funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh");
@@ -85,6 +87,9 @@ fn process_input(input: &str) {
 fn main() {
     funcs::run_shell_command("clear");
 
+    // Load configurations
+    let config = loadconfigs::load();
+
     if env::consts::OS == "linux" {
         // OK
     } else {
@@ -113,7 +118,18 @@ fn main() {
             Ok(line) => {
                 let input = line.trim();
                 if !input.is_empty() {
-                    //rl.add_history_entry(input);
+
+                    match config.get("commandHistoryEnabled").map(String::as_str) {
+                        Some("true") => {
+                            let _ = rl.add_history_entry(input);
+                        }
+                        Some(_) => {
+                            // Do nothing
+                        }
+                        None => {
+                            println!("Setting 'commandHistoryEnabled' not found in config!\nTry reloading Rusterminal!");
+                        }
+                    }                    
                     process_input(input);
                 }
             }
