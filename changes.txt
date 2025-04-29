@@ -68,3 +68,15 @@
 - "settings" command
 - You can now configure Rusterminal using the "settings" command.
 - Bug fixes
+
+# v0.2.1
+- "build" command
+- New configuration settings:
+   - disableUpdateCMD
+   - useHostnameInPrompt
+   - helpFuncOnStartup
+   - showReminderToSaveSettings
+   - forceUniversalOScompatability
+   - rusterminalBuildPath
+- Bug fixes
+- Code optimizations
