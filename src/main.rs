@@ -1,11 +1,9 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
 
-/*
-2025 Meme Supplier
+/* 2025 Meme Supplier
 memesupplierbusiness@gmail.com
-Maintained by Meme Supplier
-*/
+Maintained by Meme Supplier */
 
 use gethostname::gethostname;
 use rustyline::error::ReadlineError;
@@ -18,6 +16,9 @@ mod funcs;
 mod loadconfigs;
 
 fn process_input(input: &str) {
+    // Load configurations
+    let config = loadconfigs::load();
+
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
             continue;
@@ -33,14 +34,46 @@ fn process_input(input: &str) {
             "restart" => funcs::run_shell_command("sudo reboot"),
             "uptime" => funcs::run_shell_command("uptime"),
             "python" | "python3" => funcs::run_shell_command("python3"),
-            "update" => funcs::update(),
             "xray" => funcs::xray(),
             "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
             "credits" => funcs::credits(),
             "legacy" => funcs::run_shell_command("cd ~/ && git clone https://github.com/Meme-Supplier/PYShell.git && cd ~/PYShell && bash installer.sh"),
             "fmtdsk" => funcs::fmtdsk(),
-            "settings" => funcs::run_shell_command("nano ~/rusterminal/src/settings.conf && echo -e \"\nRestart Rusterminal for changes to take affect.\" && read"),
+
+            "build" => {
+                let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
+                let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \"{path}\".\nYou can change the path in Rusterminal's configurations.\n\"");
+                funcs::run_shell_command(&command);
+            }
+            
+            "settings" => {
+                funcs::run_shell_command("nano ~/rusterminal/src/settings.conf");
+
+                match config.get("showReminderToSaveSettings").map(String::as_str) {
+                    Some("true") => {
+                        println!("\nRestart Rusterminal for changes to take affect.\n")
+                    }
+                    Some(_) => {}
+                    None => {
+                        println!("Setting 'showReminderToSaveSettings' not found in config!\nTry reloading Rusterminal!");
+                    }
+                }
+            }
+
+            "update" => {
+                match config.get("disableUpdateCMD").map(String::as_str) {
+                    Some("false") => {
+                        funcs::update()
+                    }
+                    Some(_) => {
+                        println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n")
+                    }
+                    None => {
+                        println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!");
+                    }
+                }
+            },
 
             "upgrade" => {
                 funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh");
@@ -90,11 +123,26 @@ fn main() {
     // Load configurations
     let config = loadconfigs::load();
 
-    if env::consts::OS == "linux" {
-        // OK
-    } else {
-        println!("Rusterminal is designed for Linux only!\nExiting...");
-        exit(0);
+    match config
+        .get("forceUniversalOScompatability")
+        .map(String::as_str)
+    {
+        Some("false") => {
+            if env::consts::OS == "linux" {
+                // OK
+            } else {
+                println!("Rusterminal is designed for Linux only!\nExiting...");
+                exit(0);
+            }
+        }
+        Some(_) => {
+            if env::consts::OS != "linux" {
+                println!("Since you're OS isn't Linux, expect tons of errors and instability.");
+            }
+        }
+        None => {
+            println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!");
+        }
     }
 
     if funcs::detect_package_manager() == "apt"
@@ -103,22 +151,37 @@ fn main() {
     {}
 
     funcs::set_window_title("Rusterminal");
-    funcs::help();
+
+    match config.get("helpFuncOnStartup").map(String::as_str) {
+        Some("true") => {
+            funcs::help();
+        }
+        Some(_) => {}
+        None => {
+            println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!");
+        }
+    }
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
 
     loop {
-        let prompt = format!(
-            "{}@{}$~: ",
-            gethostname().to_string_lossy(),
-            gethostname().to_string_lossy()
-        );
+        let prompt = match config.get("useHostnameInPrompt").map(String::as_str) {
+            Some("true") => format!(
+                "{}@{}$~: ",
+                gethostname().to_string_lossy(),
+                gethostname().to_string_lossy()
+            ),
+            Some(_) => "rusterminal$~: ".to_string(),
+            None => {
+                println!("Setting 'useHostnameInPrompt' not found in config!\nTry reloading Rusterminal!");
+                "rusterminal$~: ".to_string() // fallback
+            }
+        };
 
         match rl.readline(&prompt) {
             Ok(line) => {
                 let input = line.trim();
                 if !input.is_empty() {
-
                     match config.get("commandHistoryEnabled").map(String::as_str) {
                         Some("true") => {
                             let _ = rl.add_history_entry(input);
@@ -129,7 +192,7 @@ fn main() {
                         None => {
                             println!("Setting 'commandHistoryEnabled' not found in config!\nTry reloading Rusterminal!");
                         }
-                    }                    
+                    }
                     process_input(input);
                 }
             }
