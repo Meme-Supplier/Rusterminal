@@ -1,17 +1,15 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
 
-/*
-2025 Meme Supplier
+/* 2025 Meme Supplier
 memesupplierbusiness@gmail.com
-Maintained by Meme Supplier
-*/
+Maintained by Meme Supplier */
 
 use std::env;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.0";
+static VERSION: &str = "v0.2.1";
 
 pub fn xray() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
