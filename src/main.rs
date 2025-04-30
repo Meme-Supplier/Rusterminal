@@ -5,7 +5,7 @@
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
 
-use gethostname::gethostname;
+use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
 use std::env;
@@ -13,11 +13,10 @@ use std::process::exit;
 
 mod cmds;
 mod funcs;
-mod loadconfigs;
 
 fn process_input(input: &str) {
     // Load configurations
-    let config = loadconfigs::load();
+    let config = funcs::load();
 
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
@@ -51,27 +50,17 @@ fn process_input(input: &str) {
                 funcs::run_shell_command("nano ~/rusterminal/src/settings.conf");
 
                 match config.get("showReminderToSaveSettings").map(String::as_str) {
-                    Some("true") => {
-                        println!("\nRestart Rusterminal for changes to take affect.\n")
-                    }
+                    Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
                     Some(_) => {}
-                    None => {
-                        println!("Setting 'showReminderToSaveSettings' not found in config!\nTry reloading Rusterminal!");
-                    }
+                    None => println!("Setting 'showReminderToSaveSettings' not found in config!\nTry reloading Rusterminal!"),
                 }
             }
 
             "update" => {
                 match config.get("disableUpdateCMD").map(String::as_str) {
-                    Some("false") => {
-                        funcs::update()
-                    }
-                    Some(_) => {
-                        println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n")
-                    }
-                    None => {
-                        println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!");
-                    }
+                    Some("false") => funcs::update(),
+                    Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
+                    None => println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!"),
                 }
             },
 
@@ -121,16 +110,14 @@ fn main() {
     funcs::run_shell_command("clear");
 
     // Load configurations
-    let config = loadconfigs::load();
+    let config = funcs::load();
 
     match config
         .get("forceUniversalOScompatability")
         .map(String::as_str)
     {
         Some("false") => {
-            if env::consts::OS == "linux" {
-                // OK
-            } else {
+            if env::consts::OS != "linux" {
                 println!("Rusterminal is designed for Linux only!\nExiting...");
                 exit(0);
             }
@@ -140,9 +127,7 @@ fn main() {
                 println!("Since you're OS isn't Linux, expect tons of errors and instability.");
             }
         }
-        None => {
-            println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!");
-        }
+        None => println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!"),
     }
 
     if funcs::detect_package_manager() == "apt"
@@ -153,28 +138,43 @@ fn main() {
     funcs::set_window_title("Rusterminal");
 
     match config.get("helpFuncOnStartup").map(String::as_str) {
-        Some("true") => {
-            funcs::help();
-        }
+        Some("true") => funcs::help(),
         Some(_) => {}
-        None => {
-            println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!");
-        }
+        None => println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!"),
     }
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
 
     loop {
-        let prompt = match config.get("useHostnameInPrompt").map(String::as_str) {
-            Some("true") => format!(
-                "{}@{}$~: ",
-                gethostname().to_string_lossy(),
-                gethostname().to_string_lossy()
-            ),
-            Some(_) => "rusterminal$~: ".to_string(),
+        let prompt = match config.get("promptType").map(String::as_str) {
+            Some("default") => match config.get("useHostnameInPrompt").map(String::as_str) {
+                Some("true") => {
+                    let hostname = get()
+                        .map(|h| h.to_string_lossy().into_owned())
+                        .unwrap_or_else(|_| "unknown".to_string());
+                    format!("{0}@{0}$~: ", hostname)
+                }
+                Some(_) => "rusterminal$~: ".to_string(),
+                None => {
+                    println!("Setting 'useHostnameInPrompt' not found in config!\nTry reloading Rusterminal!");
+                    "rusterminal$~: ".to_string()
+                }
+            },
+            Some("custom") => config
+                .get("customPrompt")
+                .map(|s| {
+                    let s = s.trim();
+                    if s.starts_with('"') && s.ends_with('"') && s.len() >= 2 {
+                        s[1..s.len() - 1].to_string()
+                    } else {
+                        s.to_string()
+                    }
+                })
+                .unwrap_or_else(|| "rusterminal$~: ".to_string()),
+            Some(_) => "rusterminal$~: ".to_string(), // fallback for unknown promptType
             None => {
-                println!("Setting 'useHostnameInPrompt' not found in config!\nTry reloading Rusterminal!");
-                "rusterminal$~: ".to_string() // fallback
+                println!("Setting 'promptType' not found in config!\nTry reloading Rusterminal!");
+                "rusterminal$~: ".to_string()
             }
         };
 
@@ -186,12 +186,8 @@ fn main() {
                         Some("true") => {
                             let _ = rl.add_history_entry(input);
                         }
-                        Some(_) => {
-                            // Do nothing
-                        }
-                        None => {
-                            println!("Setting 'commandHistoryEnabled' not found in config!\nTry reloading Rusterminal!");
-                        }
+                        Some(_) => {}
+                        None => println!("Setting 'commandHistoryEnabled' not found in config!\nTry reloading Rusterminal!"),
                     }
                     process_input(input);
                 }
