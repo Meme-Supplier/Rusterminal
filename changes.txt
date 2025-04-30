@@ -80,3 +80,15 @@
    - rusterminalBuildPath
 - Bug fixes
 - Code optimizations
+
+# v0.2.2
+- Moved the function to load configurations to funcs.rs
+- Code optimizations
+- You can now customize the terminal prompt
+- New configuration settings:
+   - showSystemInformationInVerCMD
+   - considerYayAsAPackageManager
+   - promptType
+   - customPrompt
+- Improved the "help" command
+- Removed file: "loadconfigs.rs": Moved to "funcs.rs" for better functionality and flexibility
