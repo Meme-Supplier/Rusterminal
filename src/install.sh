@@ -40,7 +40,7 @@ fi
 
 mkdir -p ~/rusterminal
 
-echo "Installing dependencies..."
+echo -e "\nInstalling dependencies...\n"
 
 if [[ "$PM" == "pacman" ]]; then
     sudo pacman -Syu --noconfirm
