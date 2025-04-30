@@ -1,15 +1,40 @@
 #!/usr/bin/env rust-script
+use std::collections::HashMap;
 #[cfg(target_os = "linux")]
-
 /* 2025 Meme Supplier
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
-
 use std::env;
+use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.1";
+static VERSION: &str = "v0.2.2";
+
+pub fn load() -> HashMap<String, String> {
+    // Get the home directory
+    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+
+    // Read the config file
+    let content = fs::read_to_string(format!("{home_dir}/rusterminal/src/settings.conf"))
+        .expect("Failed to read config");
+
+    // Create a HashMap to store configurations
+    let mut config = HashMap::new();
+
+    // Parse each line
+    for line in content.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue; // skip empty lines or comments
+        }
+        if let Some((key, value)) = line.split_once('=') {
+            config.insert(key.trim().to_string(), value.trim().to_string());
+        }
+    }
+
+    config // <--- Return the config HashMap
+}
 
 pub fn xray() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -64,7 +89,14 @@ pub fn clean() {
         run_shell_command("sudo dnf autoremove -y");
     } else {
         // Arch
-        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm")
+        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
+        match load().get("considerYayAsAPackageManager").map(String::as_str) {
+            Some("true") => {
+                run_shell_command("yay -Rns $(pacman -Qdtq) --noconfirm")
+            }
+            Some(_) => {},
+            None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
+        }
     }
 }
 
@@ -80,7 +112,7 @@ pub fn edit(x: &str) {
 
 pub fn set_window_title(title: &str) {
     print!("\x1b]0;{title}\x07");
-    io::stdout().flush().unwrap(); // Ensure the escape sequence is sent immediately
+    io::stdout().flush().unwrap();
 }
 
 pub fn del(x: &str) {
@@ -115,6 +147,15 @@ pub fn update() {
     } else {
         // Arch
         run_shell_command("sudo pacman -Syu");
+
+        // Use Yay if enabled
+        match load().get("considerYayAsAPackageManager").map(String::as_str) {
+            Some("true") => {
+                run_shell_command("yay -Syu")
+            }
+            Some(_) => {},
+            None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
+        }
     }
 }
 
@@ -129,15 +170,19 @@ pub fn ver() {
     println!("\nRusterminal version: {VERSION}");
     println!("Rust version: {}", rustc_version::version().unwrap());
 
-    // Resolve home directory
-    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-    let python_script = format!("{home_dir}/rusterminal/src/ver.py");
+    match load().get("showSystemInformationInVerCMD").map(String::as_str) {
+        Some("true") => {
+            let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+            let python_script = format!("{home_dir}/rusterminal/src/ver.py");
 
-    // Run the Python script using 'python3'
-    let _ = Command::new("python3")
-        .arg(python_script)
-        .status()
-        .expect("Failed to execute Python script");
+            let _ = Command::new("python3")
+                .arg(python_script)
+                .status()
+                .expect("Failed to execute Python script");
+        }
+        Some(_) => println!(),
+        None => println!("Setting 'showSystemInformationInVerCMD' not found in config!\nTry reloading Rusterminal!"),
+    }
 }
 
 pub fn run(cmd: &str) {
@@ -179,6 +224,7 @@ pub fn detect_package_manager() -> String {
 }
 
 pub fn help() {
-    println!("Welcome to Rusterminal {VERSION}!");
-    println!("Type \"cmds\" for a list of commands!\n")
+    let rustver = rustc_version::version().unwrap();
+    println!("Rusterminal {VERSION} (Rustc {rustver})");
+    println!("Type \"cmds\" or \"credits\"for more information.\n");
 }
