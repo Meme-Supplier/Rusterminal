@@ -9,7 +9,7 @@ Maintained by Meme Supplier
 import subprocess
 import readline
 
-version = "v1.2"
+version = "v1.3"
 
 def choose():
     global file
@@ -23,20 +23,18 @@ def choose():
         case '3':
             file = "funcs.rs"
         case '4':
-            file = "loadconfigs.rs"
-        case '5':
             file = "diskfmt.py"
-        case '6':
+        case '5':
             file = "ver.py"
-        case '7':
+        case '6':
             file = "xray.py"
-        case '8':
+        case '7':
             file = "install.sh"
-        case '9':
+        case '8':
             file = "launch.sh"
-        case '10':
+        case '9':
             file = "upgrade.sh"
-        case '11':
+        case '10':
             file = "uninstall.sh"
         case _:
             print("Invalid option! Choose again!")
@@ -48,14 +46,13 @@ print("\nChoose file to view (select number):\n")
 files = ["1] main.rs",
          "2] cmds.rs",
          "3] funcs.rs",
-         "4] loadconfigs.rs",
-         "5] diskfmt.py",
-         "6] ver.py",
-         "7] xray.py",
-         "8] install.sh",
-         "9] launch.sh",
-         "10] upgrade.sh",
-         "11] uninstall.sh\n"]
+         "4] diskfmt.py",
+         "5] ver.py",
+         "6] xray.py",
+         "7] install.sh",
+         "8] launch.sh",
+         "9] upgrade.sh",
+         "10] uninstall.sh\n"]
 
 for line in files:
     print(line)
