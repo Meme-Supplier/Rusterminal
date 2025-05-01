@@ -77,10 +77,15 @@ fi
 cd ~/Rusterminal || exit
 
 cp -r src ~/rusterminal/
-cp Cargo.lock Cargo.toml ~/rusterminal/
+cp Cargo.toml ~/rusterminal/
 
 chmod +x ~/rusterminal/src/launch.sh
 sudo ln -sf ~/rusterminal/src/launch.sh /usr/local/bin/rusterminal
+
+if ! grep -qxF "/usr/local/bin/rusterminal" /etc/shells; then
+    echo "Registering /usr/local/bin/rusterminal as a login shell..."
+    echo "/usr/local/bin/rusterminal" | sudo tee -a /etc/shells > /dev/null
+fi
 
 sudo rm -rf ~/Rusterminal
 
