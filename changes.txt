@@ -92,3 +92,9 @@
    - customPrompt
 - Improved the "help" command
 - Removed file: "loadconfigs.rs": Moved to "funcs.rs" for better functionality and flexibility
+
+# v0.2.3
+- Fixed typo
+- You are now able to register Rusterminal as a default shell
+- Code optimizations
+- Bug fixes
