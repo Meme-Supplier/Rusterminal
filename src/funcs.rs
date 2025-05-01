@@ -1,15 +1,17 @@
 #!/usr/bin/env rust-script
-use std::collections::HashMap;
 #[cfg(target_os = "linux")]
+
 /* 2025 Meme Supplier
 memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
+
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.2";
+static VERSION: &str = "v0.2.3";
 
 pub fn load() -> HashMap<String, String> {
     // Get the home directory
@@ -62,16 +64,15 @@ pub fn credits() {
     println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n");
 }
 
-pub fn new_dir(x: &str) {
-    let y = format!("mkdir {x}");
-    run_shell_command(&y);
+pub fn new_dir(dir: &str) {
+    run_shell_command(&format!("mkdir {dir}"));
 }
 
-pub fn input(x: &str) {
+pub fn input(str: &str) {
     let mut input = String::new();
 
     // Print the prompt and flush stdout
-    println!("{x}");
+    println!("{str}");
     io::stdout().flush().expect("Failed to flush");
 
     // Read user input
@@ -91,23 +92,19 @@ pub fn clean() {
         // Arch
         run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
         match load().get("considerYayAsAPackageManager").map(String::as_str) {
-            Some("true") => {
-                run_shell_command("yay -Rns $(pacman -Qdtq) --noconfirm")
-            }
+            Some("true") => run_shell_command("yay -Rns $(pacman -Qdtq) --noconfirm"),
             Some(_) => {},
             None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
         }
     }
 }
 
-pub fn copy(x: &str) {
-    let command = format!("cp {x}");
-    run_shell_command(&command);
+pub fn copy(path: &str) {
+    run_shell_command(&format!("cp {path}"));
 }
 
-pub fn edit(x: &str) {
-    let y = format!("nano {x}");
-    run_shell_command(&y);
+pub fn edit(file: &str) {
+    run_shell_command(&format!("nano {file}"));
 }
 
 pub fn set_window_title(title: &str) {
@@ -115,24 +112,20 @@ pub fn set_window_title(title: &str) {
     io::stdout().flush().unwrap();
 }
 
-pub fn del(x: &str) {
-    let y = format!("rm {x}");
-    run_shell_command(&y);
+pub fn del(file: &str) {
+    run_shell_command(&format!("rm {file}"));
 }
 
-pub fn ls(x: &str) {
-    let y = format!("ls {x}");
-    run_shell_command(&y);
+pub fn ls(path: &str) {
+    run_shell_command(&format!("ls {path}"));
 }
 
 pub fn ping(add: &str) {
-    let addr = format!("ping {add}");
-    run_shell_command(&addr);
+    run_shell_command(&format!("ping {add}"));
 }
 
 pub fn wait(time: &str) {
-    let cmd = format!("sleep {time}");
-    run_shell_command(&cmd);
+    run_shell_command(&format!("sleep {time}"));
 }
 
 pub fn update() {
@@ -185,17 +178,6 @@ pub fn ver() {
     }
 }
 
-pub fn run(cmd: &str) {
-    // Use sh to execute commands that may require shell features
-    let _ = Command::new("sh")
-        .arg("-c") // Use the -c option to pass the command as a string to the shell
-        .arg(cmd) // Pass the command to be executed
-        .stdin(Stdio::inherit()) // Allows interactive commands like sudo
-        .stdout(Stdio::inherit()) // Preserves colored output
-        .stderr(Stdio::inherit()) // Preserves error messages
-        .status();
-}
-
 pub fn run_shell_command(cmd: &str) {
     if cmd.trim().is_empty() {
         return;
@@ -226,5 +208,5 @@ pub fn detect_package_manager() -> String {
 pub fn help() {
     let rustver = rustc_version::version().unwrap();
     println!("Rusterminal {VERSION} (Rustc {rustver})");
-    println!("Type \"cmds\" or \"credits\"for more information.\n");
+    println!("Type \"cmds\" or \"credits\" for more information.\n");
 }
