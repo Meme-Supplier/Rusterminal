@@ -88,9 +88,9 @@ fn process_input(input: &str) {
             "newdir" => println!("Usage: newdir <path>"),
 
             _ if command.starts_with("echo ") => println!("{}", &command[5..]),
-            _ if command.starts_with("run ") => funcs::run(&command[3..]),
+            _ if command.starts_with("run ") => funcs::run_shell_command(&command[3..]),
             _ if command.starts_with("web ") => funcs::web(&command[4..]),
-            _ if command.starts_with("expr ") => funcs::run(command),
+            _ if command.starts_with("expr ") => funcs::run_shell_command(command),
             _ if command.starts_with("wait ") => funcs::wait(&command[5..]),
             _ if command.starts_with("ping ") => funcs::ping(&command[5..]),
             _ if command.starts_with("ls ") => funcs::ls(&command[3..]),
