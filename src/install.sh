@@ -34,8 +34,11 @@ case "$answer" in
 esac
 
 if [ -d ~/rusterminal ]; then
-    echo -e "${CYAN}\nRemoving \"$HOME/rusterminal/\"...${RESET}"
     sudo rm -rf ~/rusterminal/
+fi
+
+if [ -d ~/.config/rusterminal ]; then
+    sudo rm -rf ~/.config/rusterminal
 fi
 
 mkdir -p ~/rusterminal
@@ -78,6 +81,8 @@ cd ~/Rusterminal || exit
 
 cp -r src ~/rusterminal/
 cp Cargo.toml ~/rusterminal/
+mkdir -p ~/.config/rusterminal
+cp ~/Rusterminal/config/settings.conf ~/.config/rusterminal/
 
 chmod +x ~/rusterminal/src/launch.sh
 sudo ln -sf ~/rusterminal/src/launch.sh /usr/local/bin/rusterminal
