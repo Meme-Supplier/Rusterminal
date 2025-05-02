@@ -15,8 +15,8 @@ mod cmds;
 mod funcs;
 
 fn process_input(input: &str) {
-    // Load configurations
-    let config = funcs::load();
+
+    let config = funcs::load_configs();
 
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
@@ -36,18 +36,18 @@ fn process_input(input: &str) {
             "xray" => funcs::xray(),
             "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
-            "credits" => funcs::credits(),
+            "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
             "legacy" => funcs::run_shell_command("cd ~/ && git clone https://github.com/Meme-Supplier/PYShell.git && cd ~/PYShell && bash installer.sh"),
             "fmtdsk" => funcs::fmtdsk(),
 
             "build" => {
                 let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-                let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \"{path}\".\nYou can change the path in Rusterminal's configurations.\n\"");
+                let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
                 funcs::run_shell_command(&command);
             }
-            
+
             "settings" => {
-                funcs::run_shell_command("nano ~/rusterminal/src/settings.conf");
+                funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
 
                 match config.get("showReminderToSaveSettings").map(String::as_str) {
                     Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
@@ -62,15 +62,16 @@ fn process_input(input: &str) {
                     Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
                     None => println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!"),
                 }
-            },
+            }
 
             "upgrade" => {
                 funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh");
-                process_input("exit");
+                exit(0);
             }
+
             "uninstall" => {
                 funcs::run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh");
-                process_input("exit");
+                exit(0);
             }
 
             // Commands that require extra usage
@@ -87,8 +88,8 @@ fn process_input(input: &str) {
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
 
-            _ if command.starts_with("echo ") => println!("{}", &command[5..]),
-            _ if command.starts_with("run ") => funcs::run_shell_command(&command[3..]),
+            _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
+            _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
             _ if command.starts_with("web ") => funcs::web(&command[4..]),
             _ if command.starts_with("expr ") => funcs::run_shell_command(command),
             _ if command.starts_with("wait ") => funcs::wait(&command[5..]),
@@ -110,7 +111,7 @@ fn main() {
     funcs::run_shell_command("clear");
 
     // Load configurations
-    let config = funcs::load();
+    let config = funcs::load_configs();
 
     match config
         .get("forceUniversalOScompatability")
@@ -130,10 +131,16 @@ fn main() {
         None => println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!"),
     }
 
-    if funcs::detect_package_manager() == "apt"
-        || funcs::detect_package_manager() == "dnf"
-        || funcs::detect_package_manager() == "pacman"
-    {}
+    match config.get("forceDisablePackageManagerCheck").map(String::as_str) {
+        Some("false") => {
+            if funcs::detect_package_manager() == "apt"
+            || funcs::detect_package_manager() == "dnf"
+            || funcs::detect_package_manager() == "pacman"
+            {}
+        },
+        Some(_) => {}
+        None => println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!"),
+    }
 
     funcs::set_window_title("Rusterminal");
 
