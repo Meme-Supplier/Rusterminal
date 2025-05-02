@@ -32,9 +32,7 @@ def getWM():
 
     # Try getting from wmctrl if available
     try:
-        output = subprocess.check_output(["wmctrl",
-                                          "-m"],
-                                          text=True)
+        output = subprocess.check_output(["wmctrl", "-m"], text=True)
         for line in output.splitlines():
             if line.startswith("Name:"):
                 wm = line.split(":", 1)[1].strip()
