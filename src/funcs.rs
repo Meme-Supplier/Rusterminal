@@ -11,14 +11,14 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.3";
+static VERSION: &str = "v0.2.4";
 
-pub fn load() -> HashMap<String, String> {
+pub fn load_configs() -> HashMap<String, String> {
     // Get the home directory
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
 
     // Read the config file
-    let content = fs::read_to_string(format!("{home_dir}/rusterminal/src/settings.conf"))
+    let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
 
     // Create a HashMap to store configurations
@@ -42,7 +42,6 @@ pub fn xray() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
     let python_script = format!("{home_dir}/rusterminal/src/xray.py");
 
-    // Run the Python script using 'python3'
     let _ = Command::new("python3")
         .arg(python_script)
         .status()
@@ -53,15 +52,10 @@ pub fn fmtdsk() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
     let python_script = format!("{home_dir}/rusterminal/src/diskfmt.py");
 
-    // Run the Python script using 'python3'
     let _ = Command::new("python3")
         .arg(python_script)
         .status()
         .expect("Failed to execute Python script");
-}
-
-pub fn credits() {
-    println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n");
 }
 
 pub fn new_dir(dir: &str) {
@@ -71,11 +65,9 @@ pub fn new_dir(dir: &str) {
 pub fn input(str: &str) {
     let mut input = String::new();
 
-    // Print the prompt and flush stdout
     println!("{str}");
     io::stdout().flush().expect("Failed to flush");
 
-    // Read user input
     io::stdin()
         .read_line(&mut input)
         .expect("Failed to read line");
@@ -91,12 +83,16 @@ pub fn clean() {
     } else {
         // Arch
         run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
-        match load().get("considerYayAsAPackageManager").map(String::as_str) {
+        match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
             Some("true") => run_shell_command("yay -Rns $(pacman -Qdtq) --noconfirm"),
             Some(_) => {},
             None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
         }
     }
+}
+
+pub fn echo(text: &str) {
+    run_shell_command(&format!("echo -e {text}"));
 }
 
 pub fn copy(path: &str) {
@@ -141,8 +137,7 @@ pub fn update() {
         // Arch
         run_shell_command("sudo pacman -Syu");
 
-        // Use Yay if enabled
-        match load().get("considerYayAsAPackageManager").map(String::as_str) {
+        match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
             Some("true") => {
                 run_shell_command("yay -Syu")
             }
@@ -163,7 +158,7 @@ pub fn ver() {
     println!("\nRusterminal version: {VERSION}");
     println!("Rust version: {}", rustc_version::version().unwrap());
 
-    match load().get("showSystemInformationInVerCMD").map(String::as_str) {
+    match load_configs().get("showSystemInformationInVerCMD").map(String::as_str) {
         Some("true") => {
             let home_dir = env::var("HOME").expect("Failed to get HOME directory");
             let python_script = format!("{home_dir}/rusterminal/src/ver.py");
@@ -183,25 +178,35 @@ pub fn run_shell_command(cmd: &str) {
         return;
     }
 
-    // Use a shell (`sh -c`) so multi-word commands and colors work properly
     let _ = Command::new("sh")
         .arg("-c")
         .arg(cmd)
-        .stdin(Stdio::inherit()) // Allows interactive commands (like sudo pacman -Syu)
-        .stdout(Stdio::inherit()) // Preserves output colors
-        .stderr(Stdio::inherit()) // Preserves error messages
-        .status(); // Run the command and wait
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit()) 
+        .stderr(Stdio::inherit())
+        .status();
 }
 
 pub fn detect_package_manager() -> String {
-    if Command::new("pacman").output().is_ok() {
-        "pacman".to_string()
-    } else if Command::new("dnf").output().is_ok() {
-        "dnf".to_string()
-    } else if Command::new("apt").output().is_ok() {
-        "apt".to_string()
-    } else {
-        "none".to_string()
+    match load_configs().get("forceDisablePackageManagerCheck").map(String::as_str) {
+        Some("false") => {
+            if Command::new("pacman").output().is_ok() {
+                "pacman".to_string()
+            } else if Command::new("dnf").output().is_ok() {
+                "dnf".to_string()
+            } else if Command::new("apt").output().is_ok() {
+                "apt".to_string()
+            } else {
+                "none".to_string()
+            }
+        }
+        Some(_) => {
+            "none".to_string()
+        }
+        None => {
+            println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!");
+            "none".to_string()
+        }
     }
 }
 
