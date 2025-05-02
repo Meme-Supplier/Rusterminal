@@ -98,3 +98,10 @@
 - You are now able to register Rusterminal as a default shell
 - Code optimizations
 - Bug fixes
+
+# v0.2.4
+- Bug fixes
+- Improved "echo" command
+- Code optimizations
+- settings.conf location moved to ~/.config/rusterminal
+- "forceDisablePackageManagerCheck" setting
