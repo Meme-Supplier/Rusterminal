@@ -4,6 +4,7 @@ Basically my older project PYShell, but rewritten in Rust.
 # Tested on:
 
 - Arch Linux
+- Arch Linux (WSL)
 - Linux Mint
 - Fedora
 
