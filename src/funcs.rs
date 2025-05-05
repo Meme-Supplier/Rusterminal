@@ -11,20 +11,16 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.4";
+static VERSION: &str = "v0.2.5";
 
 pub fn load_configs() -> HashMap<String, String> {
-    // Get the home directory
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
 
-    // Read the config file
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
 
-    // Create a HashMap to store configurations
     let mut config = HashMap::new();
 
-    // Parse each line
     for line in content.lines() {
         let line = line.trim();
         if line.is_empty() || line.starts_with('#') {
@@ -35,27 +31,24 @@ pub fn load_configs() -> HashMap<String, String> {
         }
     }
 
-    config // <--- Return the config HashMap
+    config
+}
+
+pub fn run_python(script: &str) {
+    let _ = Command::new("python3")
+        .arg(script)
+        .status()
+        .expect("Failed to execute Python script");
 }
 
 pub fn xray() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-    let python_script = format!("{home_dir}/rusterminal/src/xray.py");
-
-    let _ = Command::new("python3")
-        .arg(python_script)
-        .status()
-        .expect("Failed to execute Python script");
+    run_python(&format!("{home_dir}/rusterminal/src/xray.py"));
 }
 
 pub fn fmtdsk() {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-    let python_script = format!("{home_dir}/rusterminal/src/diskfmt.py");
-
-    let _ = Command::new("python3")
-        .arg(python_script)
-        .status()
-        .expect("Failed to execute Python script");
+    run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 }
 
 pub fn new_dir(dir: &str) {
@@ -161,12 +154,7 @@ pub fn ver() {
     match load_configs().get("showSystemInformationInVerCMD").map(String::as_str) {
         Some("true") => {
             let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-            let python_script = format!("{home_dir}/rusterminal/src/ver.py");
-
-            let _ = Command::new("python3")
-                .arg(python_script)
-                .status()
-                .expect("Failed to execute Python script");
+            run_python(&format!("{home_dir}/rusterminal/src/ver.py"));
         }
         Some(_) => println!(),
         None => println!("Setting 'showSystemInformationInVerCMD' not found in config!\nTry reloading Rusterminal!"),
