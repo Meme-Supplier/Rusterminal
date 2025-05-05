@@ -31,13 +31,11 @@ fn process_input(input: &str) {
             "help" => funcs::help(),
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
             "restart" => funcs::run_shell_command("sudo reboot"),
-            "uptime" => funcs::run_shell_command("uptime"),
             "python" | "python3" => funcs::run_shell_command("python3"),
             "xray" => funcs::xray(),
             "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
             "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
-            "legacy" => funcs::run_shell_command("cd ~/ && git clone https://github.com/Meme-Supplier/PYShell.git && cd ~/PYShell && bash installer.sh"),
             "fmtdsk" => funcs::fmtdsk(),
 
             "build" => {
