@@ -105,3 +105,8 @@
 - Code optimizations
 - settings.conf location moved to ~/.config/rusterminal
 - "forceDisablePackageManagerCheck" setting
+
+# v0.2.5
+- Code optimizations
+- Added "parted" as a dependency
+- Removed "uptime" and "legacy" commands: Kinda useless
