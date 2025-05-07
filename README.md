@@ -37,8 +37,9 @@ Basically my older project PYShell, but rewritten in Rust.
 # Uninstall:
 
 ## Method 1:
-`rusterminal
-uninstall`
+`rusterminal`
+
+`uninstall`
 
 ## Method 2: (If you can't launch Rusterminal)
 
