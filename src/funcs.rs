@@ -11,7 +11,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.5";
+static VERSION: &str = "v0.2.6";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -47,7 +47,7 @@ pub fn xray() {
 }
 
 pub fn fmtdsk() {
-    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+    let home_dir = &env::var("HOME").expect("Failed to get HOME directory");
     run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 }
 
@@ -131,9 +131,7 @@ pub fn update() {
         run_shell_command("sudo pacman -Syu");
 
         match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
-            Some("true") => {
-                run_shell_command("yay -Syu")
-            }
+            Some("true") => run_shell_command("yay -Syu"),
             Some(_) => {},
             None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
         }
@@ -188,9 +186,7 @@ pub fn detect_package_manager() -> String {
                 "none".to_string()
             }
         }
-        Some(_) => {
-            "none".to_string()
-        }
+        Some(_) => "none".to_string(),
         None => {
             println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!");
             "none".to_string()
