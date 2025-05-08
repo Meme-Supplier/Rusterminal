@@ -8,14 +8,19 @@ Maintained by Meme Supplier
 
 import subprocess
 import readline
+import sys
 
-version = "v1.3"
+version = "v1.4"
 
 def choose():
     global file
     choice = input("Choice: ")
 
     match choice:
+        case 'exit':
+            sys.exit(0)
+        case '0':
+            sys.exit(0)
         case '1':
             file = "main.rs"
         case '2':
@@ -41,7 +46,7 @@ def choose():
             choose()
 
 print(f"\nRusterminal Viewer {version}")
-print("\nChoose file to view (select number):\n")
+print("\nChoose file to view (select number):\nType \"0\" or \"exit\" to exit.\n")
 
 files = ["1] main.rs",
          "2] cmds.rs",
