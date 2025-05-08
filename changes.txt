@@ -110,3 +110,8 @@
 - Code optimizations
 - Added "parted" as a dependency
 - Removed "uptime" and "legacy" commands: Kinda useless
+
+# v0.2.6
+- Added "gcc" as a dependency
+- Code optimizations
+- Added an option to exit "xray.py"
