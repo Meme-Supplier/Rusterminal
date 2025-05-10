@@ -1,9 +1,11 @@
 [package]
 name = "rusterminal"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2024"
 
 [dependencies]
 hostname = "0.4.1"
+regex = "1.11.1"
 rustc_version = "0.4.1"
+rustc_version_runtime = "0.3.0"
 rustyline = "15.0.0"
