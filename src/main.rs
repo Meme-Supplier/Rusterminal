@@ -85,6 +85,7 @@ fn process_input(input: &str) {
             "edit" => println!("Usage: edit <path>"),
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
+            "man" => println!("Usage: man <command>"),
 
             _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
             _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
@@ -99,6 +100,7 @@ fn process_input(input: &str) {
             _ if command.starts_with("copy ") => funcs::copy(&command[5..]),
             _ if command.starts_with("in ") => funcs::input(&command[3..]),
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
+            _ if command.starts_with("man ") => funcs::man(&command[4..]),
 
             _ => println!("{command}: command not found"),
         }
@@ -106,10 +108,14 @@ fn process_input(input: &str) {
 }
 
 fn main() {
-    funcs::run_shell_command("clear");
-
     // Load configurations
     let config = funcs::load_configs();
+
+    match config.get("clearScreenOnStartup").map(String::as_str) {
+        Some("true") => funcs::run_shell_command("clear"),
+        Some(_) => print!("\n"),
+        None => println!("Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"),
+    }
 
     match config
         .get("forceUniversalOScompatability")
