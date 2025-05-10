@@ -6,7 +6,7 @@ memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
 
 pub fn list() {
-    let lines: [&str; 31] = [
+    let lines: [&str; 32] = [
         "",
         "build",
         "clean",
@@ -22,6 +22,7 @@ pub fn list() {
         "fmtdsk",
         "help",
         "ls <path>",
+        "man <command>",
         "newdir <path>",
         "ping <site>",
         "python / python3",
