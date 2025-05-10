@@ -46,14 +46,15 @@
 - Fixed a bug that the Pacman package manager is only supported. Now users using Apt and Dnf can use it as well.
 - "cmds" command is now located in "/src/cmds.rs"
 - Fixed typos
-- Commands listed in the "cmds" command are now in alphebetical order
+- Commands listed in the "cmds" command are now in alphabetical order
 - Code optimizations
 - Renamed "sh" command to "run"
 
 # v0.1.8
 - "credits" command
 - "legacy" command
-- User input fixes- Bug fixes
+- User input fixes
+- Bug fixes
 - "fmtdsk" command
 
 # v0.1.9
@@ -115,3 +116,10 @@
 - Added "gcc" as a dependency
 - Code optimizations
 - Added an option to exit "xray.py"
+
+# v0.2.7
+- Code optimizations
+- Added configurations "considerParuAsAPackageManager" and "clearScreenOnStartup"
+- Fixed typos
+- "man" command
+- The "help" command now shows the Python version
