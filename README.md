@@ -10,8 +10,7 @@ Basically my older project "PYShell", but rewritten in Rust.
 
 # For **Linux** machines only.
 ## Supported distros:
-- **Debian**-based
-- **Ubuntu**-based
+- **Debian**/**Ubuntu**-based
 - **Fedora**-based
 - **Arch**-based
 
