@@ -123,3 +123,9 @@
 - Fixed typos
 - "man" command
 - The "help" command now shows the Python version
+
+# v0.2.8
+- "xray.py" has been rewritten in Rust.
+- Added configuration "cleanCompileOnStartup"
+- Code optimizations
+- Tweaks to "clean()"
