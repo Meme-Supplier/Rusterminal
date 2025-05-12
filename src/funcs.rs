@@ -12,8 +12,9 @@ use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use rustc_version_runtime::version; // Add rustc_version_runtime to Cargo.toml
 use regex::Regex;
+use std::process::exit;
 
-static VERSION: &str = "v0.2.7";
+static VERSION: &str = "v0.2.8";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -71,16 +72,22 @@ pub fn man(command: &str) {
     }
 }
 
+pub fn exit_rusterminal() {
+    match load_configs().get("cleanCompileOnStartup").map(String::as_str) {
+        Some("true") => {
+            run_shell_command("rm -rf $HOME/rusterminal/target");
+            exit(0)
+        },
+        Some(_) => exit(0),
+        None => println!("Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"),
+    }
+}
+
 pub fn run_python(script: &str) {
     let _ = Command::new("python3")
         .arg(script)
         .status()
         .expect("Failed to execute Python script");
-}
-
-pub fn xray() {
-    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-    run_python(&format!("{home_dir}/rusterminal/src/xray.py"));
 }
 
 pub fn fmtdsk() {
@@ -118,7 +125,15 @@ pub fn clean() {
             Some(_) => {},
             None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
         }
+
+        match load_configs().get("considerParuAsAPackageManager").map(String::as_str) {
+            Some("true") => run_shell_command("paru -Rns $(pacman -Qdtq) --noconfirm"),
+            Some(_) => {},
+            None => println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
+        }
     }
+
+    run_shell_command("sudo apt autoremove -y");
 }
 
 pub fn echo(text: &str) {
