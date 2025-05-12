@@ -6,7 +6,6 @@ Maintained by Meme Supplier */
 
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
-use crate::process_input;
 
 static VERSION: &str = "2.0";
 
