@@ -10,9 +10,11 @@ use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
 use std::env;
 use std::process::exit;
+use crate::funcs::exit_rusterminal;
 
 mod cmds;
 mod funcs;
+mod xray;
 
 fn process_input(input: &str) {
 
@@ -25,14 +27,14 @@ fn process_input(input: &str) {
 
         match command {
             "clear" => funcs::run_shell_command("clear"),
-            "exit" => exit(0),
+            "exit" => exit_rusterminal(),
             "cmds" => cmds::list(),
             "ver" => funcs::ver(),
             "help" => funcs::help(),
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
             "restart" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
-            "xray" => funcs::xray(),
+            "xray" => xray::main(),
             "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
             "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
