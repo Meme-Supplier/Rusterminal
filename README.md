@@ -27,7 +27,7 @@ Basically my older project "PYShell", but rewritten in Rust.
 
 ## 2. Navigate to the source:
 
-`$ cd ~/Rusterminal/src`
+`$ cd ~/Rusterminal/installer`
 
 ## 3. Install Rusterminal:
 
@@ -42,7 +42,7 @@ Basically my older project "PYShell", but rewritten in Rust.
 
 ## Method 2: (If you can't launch Rusterminal)
 
-`$ cd ~/Rusterminal/src`
+`$ cd ~/Rusterminal/installer`
 
 `$ chmod +x uninstall.sh`
 
