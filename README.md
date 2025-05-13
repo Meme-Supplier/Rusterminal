@@ -23,27 +23,27 @@ Basically my older project "PYShell", but rewritten in Rust.
 
 ## 1. Clone the repo:
 
-`git clone https://github.com/Meme-Supplier/Rusterminal.git`
+`$ git clone https://github.com/Meme-Supplier/Rusterminal.git`
 
-## 2. Navigate to the source
+## 2. Navigate to the source:
 
-`cd ~/Rusterminal/src`
+`$ cd ~/Rusterminal/src`
 
-## 3. Install Rusterminal
+## 3. Install Rusterminal:
 
-`bash install.sh`
+`$ bash install.sh`
 
 # Uninstall:
 
 ## Method 1:
-`rusterminal`
+`$ rusterminal`
 
-`uninstall`
+`rusterminal$~: uninstall`
 
 ## Method 2: (If you can't launch Rusterminal)
 
-`cd ~/Rusterminal/src`
+`$ cd ~/Rusterminal/src`
 
-`chmod +x uninstall.sh`
+`$ chmod +x uninstall.sh`
 
-`./uninstall.sh`
+`$ ./uninstall.sh`
