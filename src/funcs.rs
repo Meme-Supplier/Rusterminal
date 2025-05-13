@@ -10,11 +10,11 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
-use rustc_version_runtime::version; // Add rustc_version_runtime to Cargo.toml
+use rustc_version_runtime::version;
 use regex::Regex;
 use std::process::exit;
 
-static VERSION: &str = "v0.2.8";
+static VERSION: &str = "v0.2.9";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -133,7 +133,7 @@ pub fn clean() {
         }
     }
 
-    run_shell_command("sudo apt autoremove -y");
+    run_shell_command("sudo rm -rf ~/.cache || exit");
 }
 
 pub fn echo(text: &str) {
@@ -180,16 +180,16 @@ pub fn update() {
         run_shell_command("sudo dnf update");
     } else {
         // Arch
-        run_shell_command("sudo pacman -Syu");
+        run_shell_command("sudo pacman -Syyu");
 
         match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
-            Some("true") => run_shell_command("yay -Syu"),
+            Some("true") => run_shell_command("yay -Syyu"),
             Some(_) => {},
             None => println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
         }
 
         match load_configs().get("considerParuAsAPackageManager").map(String::as_str) {
-            Some("true") => run_shell_command("paru -Syu"),
+            Some("true") => run_shell_command("paru -Syyu"),
             Some(_) => {},
             None => println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!"),
         }
@@ -212,7 +212,7 @@ pub fn ver() {
             let home_dir = env::var("HOME").expect("Failed to get HOME directory");
             run_python(&format!("{home_dir}/rusterminal/src/ver.py"));
         }
-        Some(_) => println!(),
+        Some(_) => {},
         None => println!("Setting 'showSystemInformationInVerCMD' not found in config!\nTry reloading Rusterminal!"),
     }
 }
