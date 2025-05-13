@@ -129,3 +129,9 @@
 - Added configuration "cleanCompileOnStartup"
 - Code optimizations
 - Tweaks to "clean()"
+
+# v0.2.9
+- TONS of Code optimizations
+- installer files have been moved to ~/rusterminal/installer
+- Bug fixes
+- Tweaked the "update" command
