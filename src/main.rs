@@ -10,7 +10,6 @@ use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
 use std::env;
 use std::process::exit;
-use crate::funcs::exit_rusterminal;
 
 mod cmds;
 mod funcs;
@@ -27,7 +26,7 @@ fn process_input(input: &str) {
 
         match command {
             "clear" => funcs::run_shell_command("clear"),
-            "exit" => exit_rusterminal(),
+            "exit" => funcs::exit_rusterminal(),
             "cmds" => cmds::list(),
             "ver" => funcs::ver(),
             "help" => funcs::help(),
@@ -65,12 +64,12 @@ fn process_input(input: &str) {
             }
 
             "upgrade" => {
-                funcs::run_shell_command("cd ~/rusterminal/src/ && bash upgrade.sh");
+                funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
                 exit(0);
             }
 
             "uninstall" => {
-                funcs::run_shell_command("cd ~/rusterminal/src/ && bash uninstall.sh");
+                funcs::run_shell_command("cd ~/rusterminal/installer/ && bash uninstall.sh");
                 exit(0);
             }
 
@@ -109,15 +108,46 @@ fn process_input(input: &str) {
     }
 }
 
-fn main() {
-    // Load configurations
+fn get_prompt() -> String {
     let config = funcs::load_configs();
 
-    match config.get("clearScreenOnStartup").map(String::as_str) {
-        Some("true") => funcs::run_shell_command("clear"),
-        Some(_) => print!("\n"),
-        None => println!("Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"),
-    }
+    let prompt = match config.get("promptType").map(String::as_str) {
+        Some("default") => match config.get("useHostnameInPrompt").map(String::as_str) {
+            Some("true") => {
+                let hostname = get()
+                    .map(|h| h.to_string_lossy().into_owned())
+                    .unwrap_or_else(|_| "unknown".to_string());
+                format!("{0}@{0}$~: ", hostname)
+            }
+            Some(_) => "rusterminal$~: ".to_string(),
+            None => {
+                println!("Setting 'useHostnameInPrompt' not found in config!\nTry reloading Rusterminal!");
+                "rusterminal$~: ".to_string()
+            }
+        },
+        Some("custom") => config
+            .get("customPrompt")
+            .map(|s| {
+                let s = s.trim();
+                if s.starts_with('"') && s.ends_with('"') && s.len() >= 2 {
+                    s[1..s.len() - 1].to_string()
+                } else {
+                    s.to_string()
+                }
+            })
+            .unwrap_or_else(|| "rusterminal$~: ".to_string()),
+        Some(_) => "rusterminal$~: ".to_string(), // fallback for unknown promptType
+        None => {
+            println!("Setting 'promptType' not found in config!\nTry reloading Rusterminal!");
+            "rusterminal$~: ".to_string()
+        }
+    };
+
+    prompt.to_string()
+}
+
+fn check_compatability() {
+    let config = funcs::load_configs();
 
     match config
         .get("forceUniversalOScompatability")
@@ -140,57 +170,45 @@ fn main() {
     match config.get("forceDisablePackageManagerCheck").map(String::as_str) {
         Some("false") => {
             if funcs::detect_package_manager() == "apt"
-            || funcs::detect_package_manager() == "dnf"
-            || funcs::detect_package_manager() == "pacman"
+                || funcs::detect_package_manager() == "dnf"
+                || funcs::detect_package_manager() == "pacman"
             {}
+            else {
+                println!("You're using an unsupported package manager! Rusterminal will now exit.");
+            }
         },
         Some(_) => {}
         None => println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!"),
     }
+}
 
+fn init() {
     funcs::set_window_title("Rusterminal");
+    let config = funcs::load_configs();
+
+    check_compatability();
+
+    match config.get("clearScreenOnStartup").map(String::as_str) {
+        Some("true") => funcs::run_shell_command("clear"),
+        Some(_) => print!("\n"),
+        None => println!("Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"),
+    }
 
     match config.get("helpFuncOnStartup").map(String::as_str) {
         Some("true") => funcs::help(),
         Some(_) => {}
         None => println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!"),
     }
+}
 
+fn main() {
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
+    let config = funcs::load_configs();
+    let prompt: String = get_prompt();
+
+    init();
 
     loop {
-        let prompt = match config.get("promptType").map(String::as_str) {
-            Some("default") => match config.get("useHostnameInPrompt").map(String::as_str) {
-                Some("true") => {
-                    let hostname = get()
-                        .map(|h| h.to_string_lossy().into_owned())
-                        .unwrap_or_else(|_| "unknown".to_string());
-                    format!("{0}@{0}$~: ", hostname)
-                }
-                Some(_) => "rusterminal$~: ".to_string(),
-                None => {
-                    println!("Setting 'useHostnameInPrompt' not found in config!\nTry reloading Rusterminal!");
-                    "rusterminal$~: ".to_string()
-                }
-            },
-            Some("custom") => config
-                .get("customPrompt")
-                .map(|s| {
-                    let s = s.trim();
-                    if s.starts_with('"') && s.ends_with('"') && s.len() >= 2 {
-                        s[1..s.len() - 1].to_string()
-                    } else {
-                        s.to_string()
-                    }
-                })
-                .unwrap_or_else(|| "rusterminal$~: ".to_string()),
-            Some(_) => "rusterminal$~: ".to_string(), // fallback for unknown promptType
-            None => {
-                println!("Setting 'promptType' not found in config!\nTry reloading Rusterminal!");
-                "rusterminal$~: ".to_string()
-            }
-        };
-
         match rl.readline(&prompt) {
             Ok(line) => {
                 let input = line.trim();
