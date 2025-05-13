@@ -5,36 +5,21 @@ memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
 
 use std::io::{self, Write};
-use std::process::{Command, Stdio};
+use crate::funcs::run_shell_command;
 
-static VERSION: &str = "2.0";
-
-pub fn run_shell_command(cmd: &str) {
-    if cmd.trim().is_empty() {
-        return;
-    }
-
-    let _ = Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .status();
-}
+static VERSION: &str = "2.1";
 
 fn list() {
-    let lines: [&str; 10] = [
+    let lines: [&str; 9] = [
         "1] main.rs",
         "2] cmds.rs",
         "3] funcs.rs",
         "4] diskfmt.py",
         "5] ver.py",
         "6] xray.rs",
-        "7] install.sh",
-        "8] upgrade.sh",
-        "9] launch.sh",
-        "10] uninstall.sh\n"];
+        "7] upgrade.sh",
+        "8] launch.sh",
+        "9] uninstall.sh\n"];
 
     for  line in lines.iter() {
         println!("{line}");
@@ -51,10 +36,9 @@ fn choose(input: &str) {
         "4" => Some("diskfmt.py"),
         "5" => Some("ver.py"),
         "6" => Some("xray.rs"),
-        "7" => Some("install.sh"),
-        "8" => Some("upgrade.sh"),
-        "9" => Some("launch.sh"),
-        "10" => Some("uninstall.sh"),
+        "7" => Some("upgrade.sh"),
+        "8" => Some("launch.sh"),
+        "9" => Some("uninstall.sh"),
         _ => {
             println!("{input}: Invalid filename!");
             None
@@ -62,8 +46,12 @@ fn choose(input: &str) {
     };
 
     if let Some(file) = file {
-        let command = format!("nano ~/rusterminal/src/{file}");
-        run_shell_command(&command);
+        if file == "upgrade.sh" || file == "uninstall.sh"
+        {
+            run_shell_command(&format!("nano ~/rusterminal/installer/{file}"))
+        } else {
+            run_shell_command(&format!("nano ~/rusterminal/src/{file}"));
+        }
     }
 }
 
