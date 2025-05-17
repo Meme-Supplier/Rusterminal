@@ -6,13 +6,10 @@ memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
 
 pub fn list() {
-    let lines: [&str; 32] = [
+    let lines: [&str; 21] = [
         "",
-        "build",
         "clean",
         "clear",
-        "credits",
-        "cmds",
         "copy <path>",
         "del <path>",
         "echo <text>",
@@ -22,22 +19,14 @@ pub fn list() {
         "fmtdsk",
         "help",
         "ls <path>",
-        "man <command>",
         "newdir <path>",
         "ping <site>",
         "python / python3",
         "run <command>",
+        "rusterminal",
         "restart",
-        "rmtitle",
-        "settings",
         "shutdown",
-        "title <title>",
-        "uninstall",
-        "update",
-        "upgrade",
-        "ver",
         "wait <time>",
-        "xray",
         "",
     ];
 
