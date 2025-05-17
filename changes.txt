@@ -135,3 +135,9 @@
 - installer files have been moved to ~/rusterminal/installer
 - Bug fixes
 - Tweaked the "update" command
+
+# v0.3.0
+- "rusterminal" command
+- Some commands have beem moved to the new "rusterminal" command
+- code optimizations
+- Removed "man" command
