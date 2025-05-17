@@ -1,4 +1,6 @@
 #!/usr/bin/env rust-script
+use regex::Regex;
+use rustc_version_runtime::version;
 #[cfg(target_os = "linux")]
 
 /* 2025 Meme Supplier
@@ -9,12 +11,10 @@ use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
-use std::process::{Command, Stdio};
-use rustc_version_runtime::version;
-use regex::Regex;
 use std::process::exit;
+use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.2.9";
+static VERSION: &str = "v0.3.0";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -37,49 +37,19 @@ pub fn load_configs() -> HashMap<String, String> {
     config
 }
 
-pub fn man(command: &str) {
-    match command {
-        "build" => println!("Usage: Builds Rusterminal to the path specified in \"~/.config/rusterminal/settings.conf\""),
-        "clean" => println!("Usage: Cleans your system and deletes temporary files."),
-        "clear" => println!("Usage: Clears the screen."),
-        "credits" => println!("Usage: Provides information about the creator."),
-        "cmds" => println!("Usage: Lists the available commands."),
-        "copy <path>" => println!("Usage: Copies the specified path to the specified directory."),
-        "del <path>" => println!("Usage: Deletes the specified file/directory."),
-        "echo <text>" => println!("Usage: Prints your desired output to the terminal."),
-        "edit <path>" => println!("Usage: Uses GNU Nano to edit your desired file."),
-        "exit" => println!("Usage: Copies the specified path to the specified directory."),
-        "expr <equation>" => println!("Usage: Calculates an equation."),
-        "fmtdsk" => println!("Usage: Utility to format USB drives."),
-        "help" => println!("Usage: Something to get you started with Rusterminal"),
-        "ls <path>" => println!("Usage: Lists the available directories/files in your specified directory."),
-        "newdir <path>" => println!("Usage: Creates a new directory in your desired path."),
-        "ping <site>" => println!("Usage: Pings an internet address. Useful for testing your internet connectivity."),
-        "python / python3" => println!("Usage: Runs Python."),
-        "run <command>" => println!("Usage: Runs a normal shell command."),
-        "restart" => println!("Usage: Restarts your system."),
-        "rmtitle" => println!("Usage: Resets the terminal window name."),
-        "settings" => println!("Usage: Allows you to change Rusterminal's configurations."),
-        "shutdown" => println!("Usage: Powers down your system."),
-        "title <title>" => println!("Usage: Allows you to set the title of the terminal window."),
-        "uninstall" => println!("Usage: Uninstalls Rusterminal."),
-        "update" => println!("Usage: Fully updates your system."),
-        "upgrade" => println!("Usage: Updates Rusterminal."),
-        "ver" => println!("Usage: Shows system information."),
-        "wait <time>" => println!("Usage: Waits your specified amount of time (in seconds)."),
-        "xray" => println!("Usage: Allows you to edit Rusterminal's source code."),
-        _ => println!("Unknown command: {command}"),
-    }
-}
-
 pub fn exit_rusterminal() {
-    match load_configs().get("cleanCompileOnStartup").map(String::as_str) {
+    match load_configs()
+        .get("cleanCompileOnStartup")
+        .map(String::as_str)
+    {
         Some("true") => {
             run_shell_command("rm -rf $HOME/rusterminal/target");
             exit(0)
-        },
+        }
         Some(_) => exit(0),
-        None => println!("Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"),
+        None => println!(
+            "Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"
+        ),
     }
 }
 
@@ -232,7 +202,10 @@ pub fn run_shell_command(cmd: &str) {
 }
 
 pub fn detect_package_manager() -> String {
-    match load_configs().get("forceDisablePackageManagerCheck").map(String::as_str) {
+    match load_configs()
+        .get("forceDisablePackageManagerCheck")
+        .map(String::as_str)
+    {
         Some("false") => {
             if Command::new("pacman").output().is_ok() {
                 "pacman".to_string()
@@ -274,5 +247,5 @@ pub fn help() {
     let rust_version = version();
 
     println!("Rusterminal {VERSION} (Rustc {rust_version}) (Python {python_version})");
-    println!("Type \"cmds\" or \"credits\" for more information.\n");
+    println!("Type \"rusterminal\" to get started.\n");
 }
