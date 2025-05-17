@@ -69,7 +69,7 @@ fi
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # Set Rust to stable
-rustup default stable
+rustup default nightly
 
 if [[ ! -d "$HOME/Rusterminal" ]]; then
     echo "Error: Rusterminal source directory not found!"
