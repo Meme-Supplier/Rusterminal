@@ -16,8 +16,7 @@ mod funcs;
 mod xray;
 
 fn process_input(input: &str) {
-
-    let config = funcs::load_configs();
+    let _config = funcs::load_configs();
 
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
@@ -27,51 +26,12 @@ fn process_input(input: &str) {
         match command {
             "clear" => funcs::run_shell_command("clear"),
             "exit" => funcs::exit_rusterminal(),
-            "cmds" => cmds::list(),
-            "ver" => funcs::ver(),
             "help" => funcs::help(),
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
             "restart" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
-            "xray" => xray::main(),
-            "rmtitle" => funcs::set_window_title("Rusterminal"),
             "clean" => funcs::clean(),
-            "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
             "fmtdsk" => funcs::fmtdsk(),
-
-            "build" => {
-                let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-                let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
-                funcs::run_shell_command(&command);
-            }
-
-            "settings" => {
-                funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
-
-                match config.get("showReminderToSaveSettings").map(String::as_str) {
-                    Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
-                    Some(_) => {}
-                    None => println!("Setting 'showReminderToSaveSettings' not found in config!\nTry reloading Rusterminal!"),
-                }
-            }
-
-            "update" => {
-                match config.get("disableUpdateCMD").map(String::as_str) {
-                    Some("false") => funcs::update(),
-                    Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
-                    None => println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!"),
-                }
-            }
-
-            "upgrade" => {
-                funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
-                exit(0);
-            }
-
-            "uninstall" => {
-                funcs::run_shell_command("cd ~/rusterminal/installer/ && bash uninstall.sh");
-                exit(0);
-            }
 
             // Commands that require extra usage
             "echo" => println!("Usage: echo <text>"),
@@ -86,7 +46,7 @@ fn process_input(input: &str) {
             "edit" => println!("Usage: edit <path>"),
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
-            "man" => println!("Usage: man <command>"),
+            "rusterminal" => process_input("rusterminal help"),
 
             _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
             _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
@@ -96,15 +56,83 @@ fn process_input(input: &str) {
             _ if command.starts_with("ping ") => funcs::ping(&command[5..]),
             _ if command.starts_with("ls ") => funcs::ls(&command[3..]),
             _ if command.starts_with("del ") => funcs::del(&command[4..]),
-            _ if command.starts_with("title ") => funcs::set_window_title(&command[6..]),
             _ if command.starts_with("edit ") => funcs::edit(&command[5..]),
             _ if command.starts_with("copy ") => funcs::copy(&command[5..]),
             _ if command.starts_with("in ") => funcs::input(&command[3..]),
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
-            _ if command.starts_with("man ") => funcs::man(&command[4..]),
+            _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
 
             _ => println!("{command}: command not found"),
         }
+    }
+}
+
+fn rusterminal(cmd: &str) {
+    let config = funcs::load_configs();
+
+    let lines: [&str; 15] = [
+        "",
+        "Available Commands:",
+        "",
+        "  build",
+        "  cmds",
+        "  help",
+        "  rmtitle",
+        "  settings",
+        "  title <title>",
+        "  update",
+        "  upgrade",
+        "  uninstall",
+        "  ver",
+        "  xray",
+        "",
+    ];
+
+    match cmd {
+        "cmds" => cmds::list(),
+        "ver" => funcs::ver(),
+        "help" => for line in lines.iter() { println!("{line}") },
+        "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
+        "rmtitle" => funcs::set_window_title("Rusterminal"),
+        "xray" => xray::main(),
+
+        "upgrade" => {
+            funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
+            exit(0);
+        }
+
+        "uninstall" => {
+            funcs::run_shell_command("cd ~/rusterminal/installer/ && bash uninstall.sh");
+            exit(0);
+        }
+
+        "build" => {
+            let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
+            let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
+            funcs::run_shell_command(&command);
+        }
+
+        "settings" => {
+            funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
+
+            match config.get("showReminderToSaveSettings").map(String::as_str) {
+                Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
+                Some(_) => {}
+                None => println!("Setting 'showReminderToSaveSettings' not found in config!\nTry reloading Rusterminal!"),
+            }
+        }
+
+        "update" => {
+            match config.get("disableUpdateCMD").map(String::as_str) {
+                Some("false") => funcs::update(),
+                Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
+                None => println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!"),
+            }
+        }
+
+        _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
+
+        _ => {}
     }
 }
 
@@ -197,7 +225,7 @@ fn init() {
     match config.get("helpFuncOnStartup").map(String::as_str) {
         Some("true") => funcs::help(),
         Some(_) => {}
-        None => println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!"),
+        None => println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!")
     }
 }
 
