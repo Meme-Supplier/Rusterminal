@@ -17,7 +17,7 @@ Basically my older project "PYShell", but rewritten in Rust.
 ## And if you have one of the package managers listed:
 - Apt
 - Dnf
-- Pacman/Yay
+- Pacman/Yay/Paru
 
 # Install:
 
