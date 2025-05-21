@@ -1,5 +1,9 @@
-# Rusterminal - v0.3.0
-Basically my older project "PYShell", but rewritten in Rust.
+# Rusterminal - A really dumb "alternative" to zsh and bash
+
+## Current builds:
+
+- Latest release: **(v0.3.0)**
+- Latest beta: **(v0.3.1-beta1)**
 
 # Tested on:
 
