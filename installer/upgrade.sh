@@ -9,12 +9,10 @@ if [ -d ~/rusterminal ]; then
     sudo rm -rf ~/rusterminal/
 fi
 
-git clone https://github.com/Meme-Supplier/Rusterminal.git
+git clone --branch main --single-branch https://github.com/Meme-Supplier/Rusterminal
 
-cd Rusterminal/src || exit
+cd Rusterminal/installer || exit
 
 sudo chmod +x install.sh
 
 ./install.sh
-
-echo "Rusterminal successfully updated!"
