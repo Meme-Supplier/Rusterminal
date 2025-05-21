@@ -145,3 +145,4 @@
 # v0.3.1
 - Overhaul to the "rusterminal upgrade" command
 - Bug fixes
+- Update checking
