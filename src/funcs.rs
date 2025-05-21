@@ -1,6 +1,4 @@
 #!/usr/bin/env rust-script
-use regex::Regex;
-use rustc_version_runtime::version;
 #[cfg(target_os = "linux")]
 
 /* 2025 Meme Supplier
@@ -14,9 +12,10 @@ use std::io::{self, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
 use reqwest;
-use std::error::Error;
+use regex::Regex;
+use rustc_version_runtime::version;
 
-static VERSION: &str = "v0.3.1-beta2";
+pub static VERSION: &str = "v0.3.1-beta3";
 static mut LATEST: Option<&'static str> = None;
 
 pub async fn init_latest_version() {
@@ -43,7 +42,22 @@ pub async fn get_latest_stable_version_online() -> Result<String, reqwest::Error
     Ok(body)
 }
 
-// Beta channel
+pub fn get_beta_version() -> Option<&'static str> {
+    unsafe { LATEST }
+}
+
+pub async fn init_beta_version() {
+    let latest = get_latest_stable_version_online()
+        .await
+        .unwrap_or_else(|_| "unknown".to_string());
+
+    let leaked: &'static str = Box::leak(latest.into_boxed_str());
+
+    unsafe {
+        LATEST = Some(leaked);
+    }
+}
+
 pub async fn get_latest_beta_version_online() -> Result<String, reqwest::Error> {
     let url = "curl https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
     let response = reqwest::get(url).await?;
