@@ -13,8 +13,44 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
+use reqwest;
+use std::error::Error;
 
-static VERSION: &str = "v0.3.1-beta1";
+static VERSION: &str = "v0.3.1-beta2";
+static mut LATEST: Option<&'static str> = None;
+
+pub async fn init_latest_version() {
+    let latest = get_latest_stable_version_online()
+        .await
+        .unwrap_or_else(|_| "unknown".to_string());
+
+    let leaked: &'static str = Box::leak(latest.into_boxed_str());
+
+    unsafe {
+        LATEST = Some(leaked);
+    }
+}
+
+pub fn get_latest_version() -> Option<&'static str> {
+    unsafe { LATEST }
+}
+
+pub async fn get_latest_stable_version_online() -> Result<String, reqwest::Error> {
+    let url = "https://raw.githubusercontent.com/octocat/Hello-World/main/README.md";
+    let response = reqwest::get(url).await?;
+    let body = response.text().await?;
+
+    Ok(body)
+}
+
+// Beta channel
+pub async fn get_latest_beta_version_online() -> Result<String, reqwest::Error> {
+    let url = "curl https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
+    let response = reqwest::get(url).await?;
+    let body = response.text().await?;
+
+    Ok(body)
+}
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
