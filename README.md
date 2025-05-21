@@ -23,7 +23,12 @@ Basically my older project "PYShell", but rewritten in Rust.
 
 ## 1. Clone the repo:
 
+**Release:**
+
 `$ git clone https://github.com/Meme-Supplier/Rusterminal.git`
+
+**Beta: (WIP Releases, can be extremely broken)**
+`$ git clone --branch beta --single-branch https://github.com/Meme-Supplier/Rusterminal.git`
 
 ## 2. Navigate to the source:
 
