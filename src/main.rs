@@ -189,7 +189,7 @@ fn get_prompt() -> String {
     prompt.to_string()
 }
 
-fn check_compatability() {
+async fn check_compatability() {
     let config = funcs::load_configs();
 
     match config
@@ -208,6 +208,20 @@ fn check_compatability() {
             }
         }
         None => println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!"),
+    }
+
+    let latest_version_result = if funcs::VERSION.contains("-beta") {
+        funcs::get_latest_beta_version_online().await
+    } else {
+        funcs::get_latest_stable_version_online().await
+    };
+
+    if let Ok(latest_version) = latest_version_result {
+        if latest_version != funcs::VERSION {
+            println!("Rusterminal has an update available! Type \"rusterminal update\" to update rusterminal.\n");
+        }
+    } else {
+        eprintln!("Failed to check for updates.");
     }
 
     match config.get("forceDisablePackageManagerCheck").map(String::as_str) {
