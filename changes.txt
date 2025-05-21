@@ -141,3 +141,7 @@
 - Some commands have beem moved to the new "rusterminal" command
 - code optimizations
 - Removed "man" command
+
+# v0.3.1
+- Overhaul to the "rusterminal upgrade" command
+- Bug fixes
