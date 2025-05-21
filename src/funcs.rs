@@ -14,7 +14,7 @@ use std::io::{self, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
 
-static VERSION: &str = "v0.3.0";
+static VERSION: &str = "v0.3.1-beta";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
