@@ -8,7 +8,8 @@ Maintained by Meme Supplier */
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
-use std::env;
+use std::{env, io};
+use std::io::Write;
 use std::process::exit;
 
 mod cmds;
@@ -97,8 +98,22 @@ fn rusterminal(cmd: &str) {
         "xray" => xray::main(),
 
         "upgrade" => {
-            funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
-            exit(0);
+            print!("Pick a channel to update to:\n\nbeta\nmain\n\n");
+
+            let mut input = String::new();
+            io::stdout().flush().expect("Failed to flush");
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Failed to read line");
+
+            if input.trim() == "beta" {
+                // Long ass command
+                funcs::run_shell_command("cd ~/ && git clone --branch beta --single-branch https://github.com/Meme-Supplier/Rusterminal && cd ~/Rusterminal/installer && bash install.sh");
+                exit(0);
+            } else {
+                funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
+                exit(0);
+            }
         }
 
         "uninstall" => {
