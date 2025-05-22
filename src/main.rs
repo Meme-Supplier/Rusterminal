@@ -98,7 +98,7 @@ fn rusterminal(cmd: &str) {
         "xray" => xray::main(),
 
         "upgrade" => {
-            print!("Pick a channel to update to:\n\nbeta\nmain\n\n");
+            print!("Pick a channel to update to:\n\nbeta\nmain\n\nType \"exit\" to exit.\n\nChoice: ");
 
             let mut input = String::new();
             io::stdout().flush().expect("Failed to flush");
@@ -107,12 +107,16 @@ fn rusterminal(cmd: &str) {
                 .expect("Failed to read line");
 
             if input.trim() == "beta" {
-                // Long ass command
                 funcs::run_shell_command("cd ~/ && git clone --branch beta --single-branch https://github.com/Meme-Supplier/Rusterminal && cd ~/Rusterminal/installer && bash install.sh");
                 exit(0);
-            } else {
+            } else if  input.trim() == "main" {
                 funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
                 exit(0);
+            } else {
+                print!("\n");
+                if input.trim() != "exit" {
+                    println!("Invalid option! Please pick")
+                }
             }
         }
 
@@ -123,7 +127,7 @@ fn rusterminal(cmd: &str) {
 
         "build" => {
             let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-            let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
+            let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
             funcs::run_shell_command(&command);
         }
 
@@ -147,7 +151,7 @@ fn rusterminal(cmd: &str) {
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
 
-        _ => {}
+        _ => println!("Command not recognized: {cmd}"),
     }
 }
 
@@ -264,24 +268,25 @@ async fn init() {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
     let config = funcs::load_configs();
     let prompt: String = get_prompt();
 
-    init();
+    init().await;  // wait for async init stuff
+
+    if let Some(current_version) = config.get("rusterminalVersion") {
+        check_for_update(current_version).await;
+    }
 
     loop {
         match rl.readline(&prompt) {
             Ok(line) => {
                 let input = line.trim();
                 if !input.is_empty() {
-                    match config.get("commandHistoryEnabled").map(String::as_str) {
-                        Some("true") => {
-                            let _ = rl.add_history_entry(input);
-                        }
-                        Some(_) => {}
-                        None => println!("Setting 'commandHistoryEnabled' not found in config!\nTry reloading Rusterminal!"),
+                    if let Some("true") = config.get("commandHistoryEnabled").map(String::as_str) {
+                        let _ = rl.add_history_entry(input);
                     }
                     process_input(input);
                 }
