@@ -210,20 +210,6 @@ async fn check_compatability() {
         None => println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!"),
     }
 
-    let latest_version_result = if funcs::VERSION.contains("-beta") {
-        funcs::get_latest_beta_version_online().await
-    } else {
-        funcs::get_latest_stable_version_online().await
-    };
-
-    if let Ok(latest_version) = latest_version_result {
-        if latest_version != funcs::VERSION {
-            println!("Rusterminal has an update available! Type \"rusterminal update\" to update rusterminal.\n");
-        }
-    } else {
-        eprintln!("Failed to check for updates.");
-    }
-
     match config.get("forceDisablePackageManagerCheck").map(String::as_str) {
         Some("false") => {
             if funcs::detect_package_manager() == "apt"
@@ -239,11 +225,31 @@ async fn check_compatability() {
     }
 }
 
-fn init() {
+pub async fn check_for_update(current_version: &str) {
+    let latest_version = if current_version.contains("-beta") {
+        funcs::get_beta_version()
+    } else {
+        funcs::get_latest_version()
+    };
+
+    match latest_version {
+        Some(version) if version.trim() != current_version => {
+            println!("Rusterminal has an update available! Type \"rusterminal update\" to update rusterminal.\n");
+        }
+        Some(_) => {
+            println!("Rusterminal is up to date.");
+        }
+        None => {
+            eprintln!("Failed to check for updates.");
+        }
+    }
+}
+
+async fn init() {
     funcs::set_window_title("Rusterminal");
     let config = funcs::load_configs();
 
-    check_compatability();
+    check_compatability().await;
 
     match config.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
