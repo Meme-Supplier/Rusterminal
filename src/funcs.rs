@@ -20,14 +20,31 @@ use once_cell::sync::OnceCell;
 static LATEST: OnceCell<&'static str> = OnceCell::new();
 static BETA: OnceCell<&'static str> = OnceCell::new();
 
-pub const VERSION: &str = "v0.3.1-beta4"; // Replace with actual version
+pub const VERSION: &str = "v0.3.1-beta5";
 
 pub async fn init_versions() {
     let latest_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/main/VERSION";
     let beta_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
 
-    let latest = fetch_version_online(latest_url).await.unwrap_or_else(|_| "unknown".to_string());
-    let beta = fetch_version_online(beta_url).await.unwrap_or_else(|_| "unknown".to_string());
+    let latest = fetch_version_online(latest_url).await.unwrap_or_else(|e| {
+        eprintln!("Failed to fetch latest version: {e}");
+        "unknown".to_string()
+    });
+
+    let beta = fetch_version_online(beta_url).await.unwrap_or_else(|e| {
+        eprintln!("Failed to fetch beta version: {e}");
+        "unknown".to_string()
+    });
+
+    let version_re = Regex::new(r"^v\d+\.\d+\.\d+(?:-\w+)?$").unwrap();
+
+    if !version_re.is_match(&latest) {
+        eprintln!("Warning: malformed latest version string fetched: {latest}");
+    }
+
+    if !version_re.is_match(&beta) {
+        eprintln!("Warning: malformed beta version string fetched: {beta}");
+    }
 
     let _ = LATEST.set(Box::leak(latest.into_boxed_str()));
     let _ = BETA.set(Box::leak(beta.into_boxed_str()));
@@ -39,10 +56,16 @@ pub async fn fetch_version_online(url: &str) -> Result<String, reqwest::Error> {
 }
 
 pub fn get_latest_version() -> Option<&'static str> {
+    if LATEST.get().is_none() {
+        eprintln!("Warning: init_versions() was not called before get_latest_version()");
+    }
     LATEST.get().copied()
 }
 
 pub fn get_beta_version() -> Option<&'static str> {
+    if BETA.get().is_none() {
+        eprintln!("Warning: init_versions() was not called before get_beta_version()");
+    }
     BETA.get().copied()
 }
 
