@@ -14,56 +14,36 @@ use std::process::{Command, Stdio};
 use reqwest;
 use regex::Regex;
 use rustc_version_runtime::version;
+use once_cell::sync::OnceCell;
 
-pub static VERSION: &str = "v0.3.1-beta3";
-static mut LATEST: Option<&'static str> = None;
 
-pub async fn init_latest_version() {
-    let latest = get_latest_stable_version_online()
-        .await
-        .unwrap_or_else(|_| "unknown".to_string());
+static LATEST: OnceCell<&'static str> = OnceCell::new();
+static BETA: OnceCell<&'static str> = OnceCell::new();
 
-    let leaked: &'static str = Box::leak(latest.into_boxed_str());
+pub const VERSION: &str = "v0.3.1-beta4"; // Replace with actual version
 
-    unsafe {
-        LATEST = Some(leaked);
-    }
+pub async fn init_versions() {
+    let latest_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/main/VERSION";
+    let beta_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
+
+    let latest = fetch_version_online(latest_url).await.unwrap_or_else(|_| "unknown".to_string());
+    let beta = fetch_version_online(beta_url).await.unwrap_or_else(|_| "unknown".to_string());
+
+    let _ = LATEST.set(Box::leak(latest.into_boxed_str()));
+    let _ = BETA.set(Box::leak(beta.into_boxed_str()));
+}
+
+pub async fn fetch_version_online(url: &str) -> Result<String, reqwest::Error> {
+    let response = reqwest::get(url).await?;
+    response.text().await
 }
 
 pub fn get_latest_version() -> Option<&'static str> {
-    unsafe { LATEST }
-}
-
-pub async fn get_latest_stable_version_online() -> Result<String, reqwest::Error> {
-    let url = "https://raw.githubusercontent.com/octocat/Hello-World/main/README.md";
-    let response = reqwest::get(url).await?;
-    let body = response.text().await?;
-
-    Ok(body)
+    LATEST.get().copied()
 }
 
 pub fn get_beta_version() -> Option<&'static str> {
-    unsafe { LATEST }
-}
-
-pub async fn init_beta_version() {
-    let latest = get_latest_stable_version_online()
-        .await
-        .unwrap_or_else(|_| "unknown".to_string());
-
-    let leaked: &'static str = Box::leak(latest.into_boxed_str());
-
-    unsafe {
-        LATEST = Some(leaked);
-    }
-}
-
-pub async fn get_latest_beta_version_online() -> Result<String, reqwest::Error> {
-    let url = "curl https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
-    let response = reqwest::get(url).await?;
-    let body = response.text().await?;
-
-    Ok(body)
+    BETA.get().copied()
 }
 
 pub fn load_configs() -> HashMap<String, String> {
