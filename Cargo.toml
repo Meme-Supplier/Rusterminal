@@ -1,5 +1,5 @@
 [package]
-name = "Rusterminal"
+name = "rusterminal"
 version = "0.3.1-beta4"
 edition = "2024"
 
