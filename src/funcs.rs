@@ -14,59 +14,64 @@ use std::process::{Command, Stdio};
 use reqwest;
 use regex::Regex;
 use rustc_version_runtime::version;
-use once_cell::sync::OnceCell;
+use std::sync::OnceLock;
 
+static LATEST: OnceLock<String> = OnceLock::new();
+static BETA: OnceLock<String> = OnceLock::new();
 
-static LATEST: OnceCell<&'static str> = OnceCell::new();
-static BETA: OnceCell<&'static str> = OnceCell::new();
-
-pub const VERSION: &str = "v0.3.1-rc1";
+pub const VERSION: &str = "v0.3.1-rc2";
 
 pub async fn init_versions() {
     let latest_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/main/VERSION";
     let beta_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
+
+    let version_re = Regex::new(r"^v\d+\.\d+\.\d+(?:-\w+)?$").unwrap();
 
     let latest = fetch_version_online(latest_url).await.unwrap_or_else(|e| {
         eprintln!("Failed to fetch latest version: {e}");
         "unknown".to_string()
     });
 
+    if !version_re.is_match(&latest) {
+        eprintln!("Warning: malformed latest version string fetched: {latest}");
+    } else {
+        let _ = LATEST.set(latest);
+    }
+
     let beta = fetch_version_online(beta_url).await.unwrap_or_else(|e| {
         eprintln!("Failed to fetch beta version: {e}");
         "unknown".to_string()
     });
 
-    let version_re = Regex::new(r"^v\d+\.\d+\.\d+(?:-\w+)?$").unwrap();
-
-    if !version_re.is_match(&latest) {
-        eprintln!("Warning: malformed latest version string fetched: {latest}");
-    }
-
     if !version_re.is_match(&beta) {
         eprintln!("Warning: malformed beta version string fetched: {beta}");
+    } else {
+        let _ = BETA.set(beta);
     }
-
-    let _ = LATEST.set(Box::leak(latest.into_boxed_str()));
-    let _ = BETA.set(Box::leak(beta.into_boxed_str()));
 }
 
 pub async fn fetch_version_online(url: &str) -> Result<String, reqwest::Error> {
     let response = reqwest::get(url).await?;
-    response.text().await
+    let text = response.text().await?;
+    Ok(text.trim().to_string())
 }
 
 pub fn get_latest_version() -> Option<&'static str> {
-    if LATEST.get().is_none() {
+    if let Some(ver) = LATEST.get() {
+        Some(ver.as_str())
+    } else {
         eprintln!("Warning: init_versions() was not called before get_latest_version()");
+        None
     }
-    LATEST.get().copied()
 }
 
 pub fn get_beta_version() -> Option<&'static str> {
-    if BETA.get().is_none() {
+    if let Some(ver) = BETA.get() {
+        Some(ver.as_str())
+    } else {
         eprintln!("Warning: init_versions() was not called before get_beta_version()");
+        None
     }
-    BETA.get().copied()
 }
 
 pub fn load_configs() -> HashMap<String, String> {
