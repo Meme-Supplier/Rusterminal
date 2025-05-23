@@ -229,24 +229,29 @@ async fn check_compatability() {
     }
 }
 
-pub async fn check_for_update(current_version: &str) {
-    let latest_version = if current_version.contains("-beta") {
-        funcs::get_beta_version()
-    } else {
-        funcs::get_latest_version()
-    };
+pub async fn check_for_updates() {
+    funcs::init_versions().await;
 
-    match latest_version {
-        Some(version) if version.trim() != current_version => {
-            println!("Rusterminal has an update available! Type \"rusterminal update\" to update rusterminal.\n");
-        }
-        Some(_) => {
-            println!("Rusterminal is up to date.");
-        }
-        None => {
-            eprintln!("Failed to check for updates.");
-        }
+    let current = funcs::VERSION;
+    let latest = funcs::get_latest_version().unwrap_or("unknown");
+    let beta = funcs::get_beta_version().unwrap_or("unknown");
+
+    if latest == "unknown" {
+        println!("Could not fetch latest version info.");
+    } else if latest != current {
+        println!("Update available! Latest version: {latest}, you have: {current}");
+    } else {
+        println!("You are on the latest version: {current}");
     }
+
+    println!("Latest beta version: {beta}");
+}
+
+// Blocking wrapper for main.rs or sync context
+pub async fn check_for_updates_blocking() {
+    // Using Tokio runtime for example:
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    rt.block_on(check_for_updates());
 }
 
 async fn init() {
@@ -275,10 +280,8 @@ async fn main() {
     let prompt: String = get_prompt();
 
     init().await;  // wait for async init stuff
-
-    if let Some(current_version) = config.get("rusterminalVersion") {
-        check_for_update(current_version).await;
-    }
+    funcs::init_versions().await;
+    check_for_updates_blocking().await;
 
     loop {
         match rl.readline(&prompt) {
