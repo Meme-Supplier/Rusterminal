@@ -20,7 +20,7 @@ use once_cell::sync::OnceCell;
 static LATEST: OnceCell<&'static str> = OnceCell::new();
 static BETA: OnceCell<&'static str> = OnceCell::new();
 
-pub const VERSION: &str = "v0.3.1-beta5";
+pub const VERSION: &str = "v0.3.1-rc1";
 
 pub async fn init_versions() {
     let latest_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/main/VERSION";
@@ -100,9 +100,7 @@ pub fn exit_rusterminal() {
             exit(0)
         }
         Some(_) => exit(0),
-        None => println!(
-            "Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"
-        ),
+        None => println!("Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"),
     }
 }
 
