@@ -9,5 +9,3 @@ regex = "1.11.1"
 rustc_version = "0.4.1"
 rustc_version_runtime = "0.3.0"
 rustyline = "15.0.0"
-reqwest = { version = "0.12.15", features = ["json"] }
-tokio = { version = "1.45.0", features = ["rt", "rt-multi-thread", "macros"] }
