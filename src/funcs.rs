@@ -11,68 +11,10 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
-use reqwest;
 use regex::Regex;
 use rustc_version_runtime::version;
-use std::sync::OnceLock;
 
-static LATEST: OnceLock<String> = OnceLock::new();
-static BETA: OnceLock<String> = OnceLock::new();
-
-pub const VERSION: &str = "v0.3.1-rc3";
-
-pub async fn init_versions() {
-    let latest_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/main/VERSION";
-    let beta_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/beta/VERSION";
-
-    let version_re = Regex::new(r"^v\d+\.\d+\.\d+(?:-\w+)?$").unwrap();
-
-    let latest = fetch_version_online(latest_url).await.unwrap_or_else(|e| {
-        eprintln!("Failed to fetch latest version: {e}");
-        "unknown".to_string()
-    });
-
-    if !version_re.is_match(&latest) {
-        eprintln!("Warning: malformed latest version string fetched: {latest}");
-    } else {
-        let _ = LATEST.set(latest);
-    }
-
-    let beta = fetch_version_online(beta_url).await.unwrap_or_else(|e| {
-        eprintln!("Failed to fetch beta version: {e}");
-        "unknown".to_string()
-    });
-
-    if !version_re.is_match(&beta) {
-        eprintln!("Warning: malformed beta version string fetched: {beta}");
-    } else {
-        let _ = BETA.set(beta);
-    }
-}
-
-pub async fn fetch_version_online(url: &str) -> Result<String, reqwest::Error> {
-    let response = reqwest::get(url).await?;
-    let text = response.text().await?;
-    Ok(text.trim().to_string())
-}
-
-pub fn get_latest_version() -> Option<&'static str> {
-    if let Some(ver) = LATEST.get() {
-        Some(ver.as_str())
-    } else {
-        eprintln!("Warning: init_versions() was not called before get_latest_version()");
-        None
-    }
-}
-
-pub fn get_beta_version() -> Option<&'static str> {
-    if let Some(ver) = BETA.get() {
-        Some(ver.as_str())
-    } else {
-        eprintln!("Warning: init_versions() was not called before get_beta_version()");
-        None
-    }
-}
+pub const VERSION: &str = "v0.3.1-rc4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
