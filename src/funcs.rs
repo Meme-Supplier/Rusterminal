@@ -19,7 +19,7 @@ use std::sync::OnceLock;
 static LATEST: OnceLock<String> = OnceLock::new();
 static BETA: OnceLock<String> = OnceLock::new();
 
-pub const VERSION: &str = "v0.3.1-rc2";
+pub const VERSION: &str = "v0.3.1-rc3";
 
 pub async fn init_versions() {
     let latest_url = "https://raw.githubusercontent.com/Meme-Supplier/Rusterminal/main/VERSION";
