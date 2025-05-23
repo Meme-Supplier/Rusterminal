@@ -193,7 +193,7 @@ fn get_prompt() -> String {
     prompt.to_string()
 }
 
-async fn check_compatability() {
+fn check_compatability() {
     let config = funcs::load_configs();
 
     match config
@@ -229,36 +229,11 @@ async fn check_compatability() {
     }
 }
 
-pub async fn check_for_updates() {
-    funcs::init_versions().await;
-
-    let current = funcs::VERSION;
-    let latest = funcs::get_latest_version().unwrap_or("unknown");
-    let beta = funcs::get_beta_version().unwrap_or("unknown");
-
-    if latest == "unknown" {
-        println!("Could not fetch latest version info.");
-    } else if latest != current {
-        println!("Update available! Latest version: {latest}, you have: {current}");
-    } else {
-        println!("You are on the latest version: {current}");
-    }
-
-    println!("Latest beta version: {beta}");
-}
-
-// Blocking wrapper for main.rs or sync context
-pub async fn check_for_updates_blocking() {
-    // Using Tokio runtime for example:
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    rt.block_on(check_for_updates());
-}
-
-async fn init() {
+fn init() {
     funcs::set_window_title("Rusterminal");
     let config = funcs::load_configs();
 
-    check_compatability().await;
+    check_compatability();
 
     match config.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
@@ -273,15 +248,12 @@ async fn init() {
     }
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
     let config = funcs::load_configs();
     let prompt: String = get_prompt();
 
-    init().await;  // wait for async init stuff
-    funcs::init_versions().await;
-    check_for_updates_blocking().await;
+    init();
 
     loop {
         match rl.readline(&prompt) {
