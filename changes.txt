@@ -146,3 +146,8 @@
 - Overhaul to the "rusterminal upgrade" command
 - Bug fixes
 - Code optimizations
+
+# v0.3.2
+- "script" subcommand in "rusterminal" command
+- Bug fixes
+- Code optimizations
