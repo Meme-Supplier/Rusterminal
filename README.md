@@ -52,7 +52,7 @@
 
 ## Method 2: (If you can't launch Rusterminal)
 
-`$ cd ~/Rusterminal/installer`
+`$ cd ~/rusterminal/installer`
 
 `$ chmod +x uninstall.sh`
 
