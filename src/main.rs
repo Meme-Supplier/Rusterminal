@@ -8,9 +8,9 @@ Maintained by Meme Supplier */
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
-use std::{env, io};
 use std::io::Write;
 use std::process::exit;
+use std::{env, io};
 
 mod cmds;
 mod funcs;
@@ -71,7 +71,7 @@ fn process_input(input: &str) {
 fn rusterminal(cmd: &str) {
     let config = funcs::load_configs();
 
-    let lines: [&str; 15] = [
+    let lines: [&str; 16] = [
         "",
         "Available Commands:",
         "",
@@ -79,6 +79,7 @@ fn rusterminal(cmd: &str) {
         "  cmds",
         "  help",
         "  rmtitle",
+        "  script <file path>",
         "  settings",
         "  title <title>",
         "  update",
@@ -96,6 +97,8 @@ fn rusterminal(cmd: &str) {
         "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
         "rmtitle" => funcs::set_window_title("Rusterminal"),
         "xray" => xray::main(),
+        "title" => println!("Usage: title <window title>"),
+        "script" => println!("Usage: rusterminal script <script path>"),
 
         "upgrade" => {
             print!("Pick a channel to update to:\n\nbeta\nmain\n\nType \"exit\" to exit.\n\nChoice: ");
@@ -150,6 +153,7 @@ fn rusterminal(cmd: &str) {
         }
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
+        _ if cmd.starts_with("script ") => funcs::run_rusterminal_script(&cmd[7..]),
 
         _ => println!("Command not recognized: {cmd}"),
     }
@@ -238,13 +242,17 @@ fn init() {
     match config.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
         Some(_) => print!("\n"),
-        None => println!("Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"),
+        None => println!(
+            "Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"
+        ),
     }
 
     match config.get("helpFuncOnStartup").map(String::as_str) {
         Some("true") => funcs::help(),
         Some(_) => {}
-        None => println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!")
+        None => {
+            println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!")
+        }
     }
 }
 
