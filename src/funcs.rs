@@ -8,13 +8,16 @@ Maintained by Meme Supplier */
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::io::{self, Write};
+use std::fs::File;
+use std::io::{self, BufRead, BufReader, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
 use regex::Regex;
 use rustc_version_runtime::version;
 
-pub const VERSION: &str = "v0.3.1";
+use crate::process_input;
+
+pub const VERSION: &str = "v0.3.2-beta1";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -37,6 +40,22 @@ pub fn load_configs() -> HashMap<String, String> {
     config
 }
 
+pub fn run_rusterminal_script(path: &str) {
+    let file = File::open(path);
+    if let Ok(file) = file {
+        let reader = BufReader::new(file);
+        for line_result in reader.lines() {
+            if let Ok(line) = line_result {
+                process_input(&line);
+            } else {
+                eprintln!("Failed to read a line in {path}");
+            }
+        }
+    } else {
+        eprintln!("Failed to open script file: {path}");
+    }
+}
+
 pub fn exit_rusterminal() {
     match load_configs()
         .get("cleanCompileOnStartup")
@@ -47,7 +66,9 @@ pub fn exit_rusterminal() {
             exit(0)
         }
         Some(_) => exit(0),
-        None => println!("Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"),
+        None => println!(
+            "Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"
+        ),
     }
 }
 
