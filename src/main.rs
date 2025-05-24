@@ -8,7 +8,8 @@ Maintained by Meme Supplier */
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
-use std::env;
+use std::{env, io};
+use std::io::Write;
 use std::process::exit;
 
 mod cmds;
@@ -97,8 +98,26 @@ fn rusterminal(cmd: &str) {
         "xray" => xray::main(),
 
         "upgrade" => {
-            funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
-            exit(0);
+            print!("Pick a channel to update to:\n\nbeta\nmain\n\nType \"exit\" to exit.\n\nChoice: ");
+
+            let mut input = String::new();
+            io::stdout().flush().expect("Failed to flush");
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Failed to read line");
+
+            if input.trim() == "beta" {
+                funcs::run_shell_command("cd ~/ && git clone --branch beta --single-branch https://github.com/Meme-Supplier/Rusterminal && cd ~/Rusterminal/installer && bash install.sh");
+                exit(0);
+            } else if  input.trim() == "main" {
+                funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
+                exit(0);
+            } else {
+                print!("\n");
+                if input.trim() != "exit" {
+                    println!("Invalid option! Please pick")
+                }
+            }
         }
 
         "uninstall" => {
@@ -108,7 +127,7 @@ fn rusterminal(cmd: &str) {
 
         "build" => {
             let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-            let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
+            let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
             funcs::run_shell_command(&command);
         }
 
@@ -132,7 +151,7 @@ fn rusterminal(cmd: &str) {
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
 
-        _ => {}
+        _ => println!("Command not recognized: {cmd}"),
     }
 }
 
@@ -241,12 +260,8 @@ fn main() {
             Ok(line) => {
                 let input = line.trim();
                 if !input.is_empty() {
-                    match config.get("commandHistoryEnabled").map(String::as_str) {
-                        Some("true") => {
-                            let _ = rl.add_history_entry(input);
-                        }
-                        Some(_) => {}
-                        None => println!("Setting 'commandHistoryEnabled' not found in config!\nTry reloading Rusterminal!"),
+                    if let Some("true") = config.get("commandHistoryEnabled").map(String::as_str) {
+                        let _ = rl.add_history_entry(input);
                     }
                     process_input(input);
                 }

@@ -1,6 +1,4 @@
 #!/usr/bin/env rust-script
-use regex::Regex;
-use rustc_version_runtime::version;
 #[cfg(target_os = "linux")]
 
 /* 2025 Meme Supplier
@@ -13,8 +11,10 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
+use regex::Regex;
+use rustc_version_runtime::version;
 
-static VERSION: &str = "v0.3.0";
+pub const VERSION: &str = "v0.3.1-rc4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -47,9 +47,7 @@ pub fn exit_rusterminal() {
             exit(0)
         }
         Some(_) => exit(0),
-        None => println!(
-            "Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"
-        ),
+        None => println!("Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"),
     }
 }
 

@@ -4,5 +4,5 @@
 # memesupplierbusiness@gmail.com
 # Maintained by Meme Supplier
 
-cd ~/rusterminal
+cd ~/rusterminal || exit 1
 cargo run main.rs
