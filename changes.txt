@@ -151,3 +151,6 @@
 - "script" subcommand in "rusterminal" command
 - Bug fixes
 - Code optimizations
+- Logging, useful for fixing problems
+- Updated dependencies
+- New subcommand "logs" in command "rusterminal"
