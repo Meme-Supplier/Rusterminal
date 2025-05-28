@@ -21,7 +21,7 @@ use crate::logger::log;
 use crate::logger::init;
 use crate::logger::get_time;
 
-pub const VERSION: &str = "v0.3.2-beta2";
+pub const VERSION: &str = "v0.3.2-beta3";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -52,15 +52,15 @@ pub fn run_rusterminal_script(path: &str) {
         let reader = BufReader::new(file);
         for line_result in reader.lines() {
             if let Ok(line) = line_result {
-                process_input(&line);
+                process_input(&line)
             } else {
                 eprintln!("Failed to read a line in {path}");
-                log(&format!("funcs::run_rusterminal_script(): Failed to read a line in Rusterminal script: {path}"));
+                log(&format!("funcs::run_rusterminal_script(): Failed to read a line in Rusterminal script: {path}"))
             }
         }
     } else {
         eprintln!("Failed to open script file: {path}");
-        log(&format!("funcs::run_rusterminal_script(): Failed to open script file in Rusterminal script: {path}"));
+        log(&format!("funcs::run_rusterminal_script(): Failed to open script file in Rusterminal script: {path}"))
     }
 }
 
@@ -101,12 +101,12 @@ pub fn fmtdsk() {
     let home_dir = &env::var("HOME").expect("Failed to get HOME directory");
     run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 
-    log("funcs::fmtdsk(): Disk formatting successful.");
+    log("funcs::fmtdsk(): Disk formatting successful.")
 }
 
 pub fn new_dir(dir: &str) {
     log(&format!("funcs::new_dir(): Creating directory: {dir}"));
-    run_shell_command(&format!("mkdir {dir}"));
+    run_shell_command(&format!("mkdir {dir}"))
 }
 
 pub fn input(str: &str) {
@@ -124,20 +124,17 @@ pub fn input(str: &str) {
 
 pub fn clean() {
     if detect_package_manager().as_str() == "apt" {
-        // Debian/Ubuntu
-        run_shell_command("sudo apt autoremove -y");
+        run_shell_command("sudo apt autoremove -y")
     } else if detect_package_manager().as_str() == "dnf" {
-        // Fedora
-        run_shell_command("sudo dnf autoremove -y");
+        run_shell_command("sudo dnf autoremove -y")
     } else {
-        // Arch
         run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
         match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
             Some("true") => run_shell_command("yay -Rns $(yay -Qdtq) --noconfirm"),
             Some(_) => {},
             None => {
                 println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
-                log("funcs::clean(): Setting 'considerYayAsAPackageManager' not found in config!");
+                log("funcs::clean(): Setting 'considerYayAsAPackageManager' not found in config!")
             }
         }
 
@@ -146,68 +143,65 @@ pub fn clean() {
             Some(_) => {},
             None => {
                 println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
-                log("funcs::clean(): Setting 'considerParuAsAPackageManager' not found in config!");
+                log("funcs::clean(): Setting 'considerParuAsAPackageManager' not found in config!")
             }
         }
     }
 
     log("funcs::clean(): Cleaning up system cache...");
-    run_shell_command("sudo rm -rf ~/.cache || exit");
+    run_shell_command("sudo rm -rf ~/.cache || exit")
 }
 
 pub fn echo(text: &str) {
     log(&format!("funcs::echo(): Running echoing text: {text}"));
-    run_shell_command(&format!("echo -e {text}"));
+    run_shell_command(&format!("echo -e {text}"))
 }
 
 pub fn copy(path: &str) {
     log(&format!("funcs::copy(): Copying file: {path}"));
-    run_shell_command(&format!("cp {path}"));
+    run_shell_command(&format!("cp {path}"))
 }
 
 pub fn edit(file: &str) {
     log(&format!("funcs::edit(): Editing file: {file}"));
-    run_shell_command(&format!("nano {file}"));
+    run_shell_command(&format!("nano {file}"))
 }
 
 pub fn set_window_title(title: &str) {
     log(&format!("funcs::set_window_title(): Setting window title: {title}"));
     print!("\x1b]0;{title}\x07");
-    io::stdout().flush().unwrap();
+    io::stdout().flush().unwrap()
 }
 
 pub fn del(file: &str) {
     log(&format!("funcs::del(): Deleting file: {file}"));
-    run_shell_command(&format!("rm {file}"));
+    run_shell_command(&format!("rm {file}"))
 }
 
 pub fn ls(path: &str) {
     log(&format!("funcs::ls(): Listing directory: {path}"));
-    run_shell_command(&format!("ls {path}"));
+    run_shell_command(&format!("ls {path}"))
 }
 
 pub fn ping(add: &str) {
     log(&format!("funcs::ping(): Pinging web address: {add}"));
-    run_shell_command(&format!("ping {add}"));
+    run_shell_command(&format!("ping {add}"))
 }
 
 pub fn wait(time: &str) {
     log(&format!("funcs::wait(): Waiting {time} seconds..."));
-    run_shell_command(&format!("sleep {time}"));
+    run_shell_command(&format!("sleep {time}"))
 }
 
 pub fn update() {
     let package_manager = detect_package_manager();
 
     if package_manager == "apt" {
-        // Debian/Ubuntu
-        run_shell_command("sudo apt update && sudo apt upgrade");
+        run_shell_command("sudo apt update && sudo apt upgrade") // Debian/Ubuntu
     } else if package_manager == "dnf" {
-        // Fedora
-        run_shell_command("sudo dnf update");
+        run_shell_command("sudo dnf update") // Fedora
     } else {
-        // Arch
-        run_shell_command("sudo pacman -Syyu");
+        run_shell_command("sudo pacman -Syyu"); // Arch
 
         match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
             Some("true") => run_shell_command("yay -Syyu"),
@@ -228,7 +222,7 @@ pub fn update() {
         }
     }
 
-    log("funcs::update(): Updated system.");
+    log("funcs::update(): Updated system.")
 }
 
 pub fn web(url: &str) {
@@ -247,12 +241,12 @@ pub fn ver() {
     match load_configs().get("showSystemInformationInVerCMD").map(String::as_str) {
         Some("true") => {
             let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-            run_python(&format!("{home_dir}/rusterminal/src/ver.py"));
+            run_python(&format!("{home_dir}/rusterminal/src/ver.py"))
         }
         Some(_) => {},
         None => {
             println!("Setting \"showSystemInformationInVerCMD\" not found in config!\nTry reloading Rusterminal!");
-            log("funcs::ver(): Setting \"showSystemInformationInVerCMD\" not found in config!");
+            log("funcs::ver(): Setting \"showSystemInformationInVerCMD\" not found in config!")
         }
     }
 }
@@ -261,7 +255,7 @@ pub fn run_shell_command(cmd: &str) {
     log(&format!("funcs::run_shell_command(): Running shell command: {cmd}"));
     
     if cmd.trim().is_empty() {
-        return;
+        return
     }
 
     let _ = Command::new("sh")
