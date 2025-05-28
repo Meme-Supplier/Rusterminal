@@ -27,10 +27,10 @@ pub fn list() {
         "restart",
         "shutdown",
         "wait <time>",
-        "",
+        ""
     ];
 
     for line in lines.iter() {
-        println!("{line}");
+        println!("{line}")
     }
 }
