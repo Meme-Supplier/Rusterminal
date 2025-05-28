@@ -24,7 +24,7 @@ fn write_to_file(text: &str) -> std::io::Result<()> {
         .create(true)
         .append(true)
         .open(path)?;
-    writeln!(file, "{}", text)?;
+    writeln!(file, "{text}")?;
     Ok(())
 }
 
@@ -35,12 +35,12 @@ pub fn get_time() -> String {
 pub fn log(text: &str) {
     let time = get_time();
     if let Err(e) = write_to_file(&format!("{time}: {text}")) {
-        eprintln!("Failed to write log: {}", e);
+        eprintln!("Failed to write log: {e}")
     }
 }
 
 pub fn init(init: &str) {
     if let Err(e) = write_to_file(init) {
-        eprintln!("Failed to init log: {}", e);
+        eprintln!("Failed to init log: {e}")
     }
 }
