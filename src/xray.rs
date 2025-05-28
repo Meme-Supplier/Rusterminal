@@ -19,11 +19,11 @@ fn list() {
         "6] xray.rs",
         "7] upgrade.sh",
         "8] launch.sh",
-        "9] uninstall.sh\n",
+        "9] uninstall.sh\n"
     ];
 
     for line in lines.iter() {
-        println!("{line}");
+        println!("{line}")
     }
 }
 
@@ -50,7 +50,7 @@ fn choose(input: &str) {
         if file == "upgrade.sh" || file == "uninstall.sh" {
             run_shell_command(&format!("nano ~/rusterminal/installer/{file}"))
         } else {
-            run_shell_command(&format!("nano ~/rusterminal/src/{file}"));
+            run_shell_command(&format!("nano ~/rusterminal/src/{file}"))
         }
     }
 }
@@ -70,5 +70,5 @@ pub fn main() {
 
     choose(&input);
     print!("\n");
-    run_shell_command("clear");
+    run_shell_command("clear")
 }
