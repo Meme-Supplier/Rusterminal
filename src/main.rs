@@ -22,7 +22,7 @@ fn process_input(input: &str) {
 
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
-            continue;
+            continue
         }
 
         match command {
@@ -64,7 +64,7 @@ fn process_input(input: &str) {
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
             _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
 
-            _ => println!("{command}: command not found"),
+            _ => println!("{command}: command not found")
         }
     }
 }
@@ -90,7 +90,7 @@ fn rusterminal(cmd: &str) {
         "  uninstall",
         "  ver",
         "  xray",
-        "",
+        ""
     ];
 
     match cmd {
@@ -121,20 +121,17 @@ fn rusterminal(cmd: &str) {
 
             if input.trim() == "beta" {
                 logger::log("main::rusterminal(): Updating Rusterminal to Beta branch...");
-
                 funcs::run_shell_command("cd ~/ && git clone --branch beta --single-branch https://github.com/Meme-Supplier/Rusterminal && cd ~/Rusterminal/installer && bash install.sh");
-
                 logger::log("main::rusterminal(): Update successful.");
-                exit(0);
+                exit(0)
             } else if  input.trim() == "main" {
                 logger::log("main::rusterminal(): Updating Rusterminal to Main branch...");
-
                 funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
-
                 logger::log("main::rusterminal(): Update successful.");
-                exit(0);
+                exit(0)
             } else {
                 print!("\n");
+
                 if input.trim() != "exit" {
                     println!("Invalid option! Please pick between \"beta\" and \"main\".")
                 }
@@ -143,22 +140,19 @@ fn rusterminal(cmd: &str) {
 
         "uninstall" => {
             logger::log("main::rusterminal(): Uninstalling Rusterminal...()");
-
             funcs::run_shell_command("cd ~/rusterminal/installer/ && bash uninstall.sh");
-
             logger::log("main::rusterminal(): Uninstall successful.");
-            exit(0);
+            exit(0)
         }
 
         "build" => {
             let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-
             logger::log(&format!("main::rusterminal(): Building Rusterminal to {path}."));
 
             let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
             funcs::run_shell_command(&command);
 
-            logger::log("main::rusterminal(): Build successful.");
+            logger::log("main::rusterminal(): Build successful.")
         }
 
         "settings" => {
@@ -192,7 +186,7 @@ fn rusterminal(cmd: &str) {
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
         _ if cmd.starts_with("script ") => funcs::run_rusterminal_script(&cmd[7..]),
 
-        _ => println!("Command not recognized: {cmd}"),
+        _ => println!("Command not recognized: {cmd}")
     }
 }
 
@@ -258,18 +252,18 @@ fn check_compatability() {
             if env::consts::OS != "linux" {
                 println!("Rusterminal is designed for Linux only!\nExiting...");
                 logger::log("main::check_compatability(): System isn't Linux, quitting Rusterminal.");
-                exit(0);
+                exit(0)
             }
         }
         Some(_) => {
             if env::consts::OS != "linux" {
                 println!("Since you're OS isn't Linux, expect tons of errors and instability.");
-                logger::log("main::check_compatability(): Running Rusterminal with tons on errors and instability...");
+                logger::log("main::check_compatability(): Running Rusterminal with tons on errors and instability...")
             }
         }
         None => {
             println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!");
-            logger::log("main::check_compatability(): Setting 'forceUniversalOScompatability' not found in config!");
+            logger::log("main::check_compatability(): Setting 'forceUniversalOScompatability' not found in config!")
         }
     }
 
@@ -282,13 +276,13 @@ fn check_compatability() {
             else {
                 println!("You're using an unsupported package manager! Rusterminal will now exit.");
                 logger::log("main::check_compatability(): User is using an unsupported package manager. Exiting...");
-                exit(0);
+                exit(0)
             }
         },
         Some(_) => {}
         None => {
             println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!");
-            logger::log("main::check_compatibility(): Setting 'forceDisablePackageManagerCheck' not found in config!");
+            logger::log("main::check_compatibility(): Setting 'forceDisablePackageManagerCheck' not found in config!")
         }
     }
 }
@@ -312,7 +306,8 @@ fn init() {
         Some("true") => funcs::help(),
         Some(_) => {}
         None => {
-            println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!")
+            println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!");
+            logger::log("main::init(): Setting 'helpFuncOnStartup' not found in config!")
         }
     }
 }
@@ -335,16 +330,16 @@ fn main() {
                     if let Some("true") = config.get("commandHistoryEnabled").map(String::as_str) {
                         let _ = rl.add_history_entry(input);
                     }
-                    process_input(input);
+                    process_input(input)
                 }
             }
             Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
                 println!("Exiting...");
-                break;
+                break
             }
             Err(err) => {
                 println!("Error: {:?}", err);
-                break;
+                break
             }
         }
     }
