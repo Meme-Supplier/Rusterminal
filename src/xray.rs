@@ -7,7 +7,7 @@ Maintained by Meme Supplier */
 use crate::funcs::run_shell_command;
 use std::io::{self, Write};
 
-static VERSION: &str = "2.1";
+static VERSION: &str = "2.2";
 
 fn list() {
     let lines: [&str; 9] = [
@@ -19,7 +19,7 @@ fn list() {
         "6] xray.rs",
         "7] upgrade.sh",
         "8] launch.sh",
-        "9] uninstall.sh\n"
+        "9] uninstall.sh\n",
     ];
 
     for line in lines.iter() {
