@@ -6,13 +6,14 @@ memesupplierbusiness@gmail.com
 Maintained by Meme Supplier */
 
 use chrono::Local;
+use std::env;
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::env;
 use std::path::PathBuf;
 
 fn get_log_path() -> std::io::Result<PathBuf> {
-    let home = env::var("HOME").map_err(|e| std::io::Error::new(std::io::ErrorKind::NotFound, e))?;
+    let home =
+        env::var("HOME").map_err(|e| std::io::Error::new(std::io::ErrorKind::NotFound, e))?;
     let mut path = PathBuf::from(home);
     path.push("rusterminal/log.txt");
     Ok(path)
@@ -20,10 +21,7 @@ fn get_log_path() -> std::io::Result<PathBuf> {
 
 fn write_to_file(text: &str) -> std::io::Result<()> {
     let path = get_log_path()?;
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(path)?;
+    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
     writeln!(file, "{text}")?;
     Ok(())
 }
