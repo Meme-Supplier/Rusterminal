@@ -27,7 +27,7 @@ pub fn list() {
         "restart",
         "shutdown",
         "wait <time>",
-        ""
+        "",
     ];
 
     for line in lines.iter() {
