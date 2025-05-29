@@ -153,4 +153,6 @@
 - Code optimizations
 - Logging, useful for fixing problems
 - Updated dependencies
-- New subcommand "logs" in command "rusterminal"
+- New subcommands "logs" and "dellogs" in command "rusterminal"
+- Fixed typos
+- Some utilities for people to develop Rusterminal
