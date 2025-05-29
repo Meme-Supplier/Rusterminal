@@ -14,15 +14,17 @@ use std::{env, io};
 
 mod cmds;
 mod funcs;
-mod xray;
 mod logger;
+mod xray;
 
 fn process_input(input: &str) {
-    logger::log(&format!("main::process_input(): Executing command: {input}"));
+    logger::log(&format!(
+        "main::process_input(): Executing command: {input}"
+    ));
 
     for command in input.split("&&").map(|s| s.trim()) {
         if command.is_empty() {
-            continue
+            continue;
         }
 
         match command {
@@ -64,21 +66,24 @@ fn process_input(input: &str) {
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
             _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
 
-            _ => println!("{command}: command not found")
+            _ => println!("{command}: command not found"),
         }
     }
 }
 
 fn rusterminal(cmd: &str) {
     let config = funcs::load_configs();
-    logger::log("main::rusterminal(): Executing command in subcommand \"rusterminal()\": {cmd}");
+    logger::log(&format!(
+        "main::rusterminal(): Executing command in subcommand \"rusterminal()\": {cmd}"
+    ));
 
-    let lines: [&str; 17] = [
+    let lines: [&str; 18] = [
         "",
         "Available Commands:",
         "",
         "  build",
         "  cmds",
+        "  dellogs",
         "  help",
         "  logs",
         "  rmtitle",
@@ -90,7 +95,7 @@ fn rusterminal(cmd: &str) {
         "  uninstall",
         "  ver",
         "  xray",
-        ""
+        "",
     ];
 
     match cmd {
@@ -102,6 +107,13 @@ fn rusterminal(cmd: &str) {
         "xray" => xray::main(),
         "title" => println!("Usage: title <window title>"),
         "script" => println!("Usage: rusterminal script <script path>"),
+
+        "dellogs" => {
+            println!("Relaunch Rusterminal to reset your logs.");
+            logger::log("main::rusterminal(): Deleting logs...");
+            funcs::run_shell_command("rm -f ~/rusterminal/log.txt");
+            exit(0)
+        }
 
         "logs" => {
             logger::log("main::rusterminal(): Opening logs");
@@ -240,9 +252,14 @@ fn check_compatability() {
     let package_manager = funcs::detect_package_manager();
     let os = env::consts::OS;
 
-    logger::log(&format!("main::check_compatability(): Package Manager: {package_manager}"));
+    logger::log(&format!(
+        "main::check_compatability(): Package Manager: {package_manager}"
+    ));
     logger::log(&format!("main::check_compatability(): OS: {os}"));
-    logger::log(&format!("main::check_compatability(): Rusterminal Version: {}", funcs::VERSION));
+    logger::log(&format!(
+        "main::check_compatability(): Rusterminal Version: {}",
+        funcs::VERSION
+    ));
 
     match config
         .get("forceUniversalOScompatability")
@@ -251,7 +268,9 @@ fn check_compatability() {
         Some("false") => {
             if env::consts::OS != "linux" {
                 println!("Rusterminal is designed for Linux only!\nExiting...");
-                logger::log("main::check_compatability(): System isn't Linux, quitting Rusterminal.");
+                logger::log(
+                    "main::check_compatability(): System isn't Linux, quitting Rusterminal.",
+                );
                 exit(0)
             }
         }
@@ -267,18 +286,21 @@ fn check_compatability() {
         }
     }
 
-    match config.get("forceDisablePackageManagerCheck").map(String::as_str) {
+    match config
+        .get("forceDisablePackageManagerCheck")
+        .map(String::as_str)
+    {
         Some("false") => {
             if funcs::detect_package_manager() == "apt"
                 || funcs::detect_package_manager() == "dnf"
                 || funcs::detect_package_manager() == "pacman"
-            {}
-            else {
+            {
+            } else {
                 println!("You're using an unsupported package manager! Rusterminal will now exit.");
                 logger::log("main::check_compatability(): User is using an unsupported package manager. Exiting...");
                 exit(0)
             }
-        },
+        }
         Some(_) => {}
         None => {
             println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!");
@@ -297,7 +319,9 @@ fn init() {
         Some("true") => funcs::run_shell_command("clear"),
         Some(_) => print!("\n"),
         None => {
-            println!("Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!");
+            println!(
+                "Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"
+            );
             logger::log("main::init(): Setting 'clearScreenOnStartup' not found in config!")
         }
     }
@@ -306,14 +330,19 @@ fn init() {
         Some("true") => funcs::help(),
         Some(_) => {}
         None => {
-            println!("Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!");
+            println!(
+                "Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!"
+            );
             logger::log("main::init(): Setting 'helpFuncOnStartup' not found in config!")
         }
     }
 }
 
 fn main() {
-    logger::init(&format!("===== Start session {} =====\n", &logger::get_time()));
+    logger::init(&format!(
+        "===== Start session {} =====\n",
+        &logger::get_time()
+    ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
     let config = funcs::load_configs();
@@ -335,11 +364,11 @@ fn main() {
             }
             Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
                 println!("Exiting...");
-                break
+                break;
             }
             Err(err) => {
                 println!("Error: {:?}", err);
-                break
+                break;
             }
         }
     }
