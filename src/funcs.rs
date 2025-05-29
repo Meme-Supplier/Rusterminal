@@ -17,11 +17,11 @@ use rustc_version_runtime::version;
 
 use crate::process_input;
 
-use crate::logger::log;
-use crate::logger::init;
 use crate::logger::get_time;
+use crate::logger::init;
+use crate::logger::log;
 
-pub const VERSION: &str = "v0.3.2-beta3";
+pub const VERSION: &str = "v0.3.2-beta4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -45,7 +45,9 @@ pub fn load_configs() -> HashMap<String, String> {
 }
 
 pub fn run_rusterminal_script(path: &str) {
-    log(&format!("funcs::run_rusterminal_script(): Running Rusterminal script: {path}"));
+    log(&format!(
+        "funcs::run_rusterminal_script(): Running Rusterminal script: {path}"
+    ));
 
     let file = File::open(path);
     if let Ok(file) = file {
@@ -76,18 +78,22 @@ pub fn exit_rusterminal() {
         }
         Some(_) => {
             log("funcs::exit_rusterminal(): Exiting Rusterminal...");
-            init(&format!("===== End Session {} =====\n", get_time()));
+            init(&format!("\n===== End Session {} =====\n", get_time()));
             exit(0)
         }
         None => {
-            println!("Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!");
+            println!(
+                "Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"
+            );
             log("funcs::exit_rusterminal(): Setting 'cleanCompileOnStartup' not found in config!")
         }
     }
 }
 
 pub fn run_python(script: &str) {
-    log(&format!("funcs::run_python(): Running Python script: {script}"));
+    log(&format!(
+        "funcs::run_python(): Running Python script: {script}"
+    ));
 
     let _ = Command::new("python3")
         .arg(script)
@@ -129,18 +135,24 @@ pub fn clean() {
         run_shell_command("sudo dnf autoremove -y")
     } else {
         run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
-        match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
+        match load_configs()
+            .get("considerYayAsAPackageManager")
+            .map(String::as_str)
+        {
             Some("true") => run_shell_command("yay -Rns $(yay -Qdtq) --noconfirm"),
-            Some(_) => {},
+            Some(_) => {}
             None => {
                 println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
                 log("funcs::clean(): Setting 'considerYayAsAPackageManager' not found in config!")
             }
         }
 
-        match load_configs().get("considerParuAsAPackageManager").map(String::as_str) {
+        match load_configs()
+            .get("considerParuAsAPackageManager")
+            .map(String::as_str)
+        {
             Some("true") => run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm"),
-            Some(_) => {},
+            Some(_) => {}
             None => {
                 println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
                 log("funcs::clean(): Setting 'considerParuAsAPackageManager' not found in config!")
@@ -168,7 +180,9 @@ pub fn edit(file: &str) {
 }
 
 pub fn set_window_title(title: &str) {
-    log(&format!("funcs::set_window_title(): Setting window title: {title}"));
+    log(&format!(
+        "funcs::set_window_title(): Setting window title: {title}"
+    ));
     print!("\x1b]0;{title}\x07");
     io::stdout().flush().unwrap()
 }
@@ -203,18 +217,24 @@ pub fn update() {
     } else {
         run_shell_command("sudo pacman -Syyu"); // Arch
 
-        match load_configs().get("considerYayAsAPackageManager").map(String::as_str) {
+        match load_configs()
+            .get("considerYayAsAPackageManager")
+            .map(String::as_str)
+        {
             Some("true") => run_shell_command("yay -Syyu"),
-            Some(_) => {},
+            Some(_) => {}
             None => {
                 println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
                 log("Setting 'considerYayAsAPackageManager' not found in config!")
             }
         }
 
-        match load_configs().get("considerParuAsAPackageManager").map(String::as_str) {
+        match load_configs()
+            .get("considerParuAsAPackageManager")
+            .map(String::as_str)
+        {
             Some("true") => run_shell_command("paru -Syyu"),
-            Some(_) => {},
+            Some(_) => {}
             None => {
                 println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
                 log("funcs::update(): Setting 'considerParuAsAPackageManager' not found in config!")
@@ -238,12 +258,15 @@ pub fn ver() {
     println!("\nRusterminal version: {VERSION}");
     println!("Rust version: {}", rustc_version::version().unwrap());
 
-    match load_configs().get("showSystemInformationInVerCMD").map(String::as_str) {
+    match load_configs()
+        .get("showSystemInformationInVerCMD")
+        .map(String::as_str)
+    {
         Some("true") => {
             let home_dir = env::var("HOME").expect("Failed to get HOME directory");
             run_python(&format!("{home_dir}/rusterminal/src/ver.py"))
         }
-        Some(_) => {},
+        Some(_) => {}
         None => {
             println!("Setting \"showSystemInformationInVerCMD\" not found in config!\nTry reloading Rusterminal!");
             log("funcs::ver(): Setting \"showSystemInformationInVerCMD\" not found in config!")
@@ -252,10 +275,12 @@ pub fn ver() {
 }
 
 pub fn run_shell_command(cmd: &str) {
-    log(&format!("funcs::run_shell_command(): Running shell command: {cmd}"));
-    
+    log(&format!(
+        "funcs::run_shell_command(): Running shell command: {cmd}"
+    ));
+
     if cmd.trim().is_empty() {
-        return
+        return;
     }
 
     let _ = Command::new("sh")
