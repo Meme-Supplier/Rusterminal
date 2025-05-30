@@ -1,10 +1,6 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
 
-/* 2025 Meme Supplier
-memesupplierbusiness@gmail.com
-Maintained by Meme Supplier */
-
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
