@@ -156,3 +156,4 @@
 - New subcommands "logs" and "dellogs" in command "rusterminal"
 - Fixed typos
 - Some utilities for people to develop Rusterminal
+- "clean" command now cleans your system more
