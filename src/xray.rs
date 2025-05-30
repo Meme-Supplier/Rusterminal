@@ -1,8 +1,5 @@
 #!/usr/bin/env rust-script
-
-/* 2025 Meme Supplier
-memesupplierbusiness@gmail.com
-Maintained by Meme Supplier */
+#[cfg(target_os = "linux")]
 
 use crate::funcs::run_shell_command;
 use std::io::{self, Write};
@@ -19,7 +16,7 @@ fn list() {
         "6] xray.rs",
         "7] upgrade.sh",
         "8] launch.sh",
-        "9] uninstall.sh\n",
+        "9] uninstall.sh\n"
     ];
 
     for line in lines.iter() {
