@@ -1,10 +1,9 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
 
-/* 2025 Meme Supplier
-memesupplierbusiness@gmail.com
-Maintained by Meme Supplier */
-
+use regex::Regex;
+use rustc_version_runtime::version;
+use std;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -12,8 +11,6 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 use std::process::exit;
 use std::process::{Command, Stdio};
-use regex::Regex;
-use rustc_version_runtime::version;
 
 use crate::process_input;
 
@@ -21,7 +18,7 @@ use crate::logger::get_time;
 use crate::logger::init;
 use crate::logger::log;
 
-pub const VERSION: &str = "v0.3.2-beta4";
+pub const VERSION: &str = "v0.3.2-beta5";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -129,17 +126,24 @@ pub fn input(str: &str) {
 }
 
 pub fn clean() {
+    log("funcs::clean(): Cleaning up your package manager...");
+
     if detect_package_manager().as_str() == "apt" {
         run_shell_command("sudo apt autoremove -y")
     } else if detect_package_manager().as_str() == "dnf" {
         run_shell_command("sudo dnf autoremove -y")
     } else {
         run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
+        run_shell_command("sudo pacman -S -cc --noconfirm");
+
         match load_configs()
             .get("considerYayAsAPackageManager")
             .map(String::as_str)
         {
-            Some("true") => run_shell_command("yay -Rns $(yay -Qdtq) --noconfirm"),
+            Some("true") => {
+                run_shell_command("yay -Rns $(yay -Qdtq) --noconfirm");
+                run_shell_command("yay -S -cc --noconfirm")
+            }
             Some(_) => {}
             None => {
                 println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
@@ -151,7 +155,10 @@ pub fn clean() {
             .get("considerParuAsAPackageManager")
             .map(String::as_str)
         {
-            Some("true") => run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm"),
+            Some("true") => {
+                run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm");
+                run_shell_command("paru -S -cc --noconfirm")
+            }
             Some(_) => {}
             None => {
                 println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
