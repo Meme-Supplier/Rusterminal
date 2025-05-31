@@ -45,7 +45,7 @@ fn process_input(input: &str) {
             "edit" => println!("Usage: edit <path>"),
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
-            "rusterminal" => process_input("rusterminal help"),
+            "rusterminal" => rusterminal("help"),
 
             _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
             _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
