@@ -33,6 +33,8 @@ case "$answer" in
     [Nn]) exit ;;
 esac
 
+echo ""
+
 if [ -d ~/rusterminal ]; then
     sudo rm -rf ~/rusterminal/
 fi
