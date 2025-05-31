@@ -30,7 +30,6 @@ fn process_input(input: &str) {
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
             "restart" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
-            "clean" => funcs::clean(),
             "fmtdsk" => funcs::fmtdsk(),
 
             // Commands that require extra usage
@@ -73,11 +72,12 @@ fn rusterminal(cmd: &str) {
         "main::rusterminal(): Executing command in subcommand \"rusterminal()\": {cmd}"
     ));
 
-    let lines: [&str; 18] = [
+    let lines: [&str; 19] = [
         "",
         "Available Commands:",
         "",
         "  build",
+        "  clean",
         "  cmds",
         "  dellogs",
         "  help",
@@ -103,6 +103,7 @@ fn rusterminal(cmd: &str) {
         "xray" => xray::main(),
         "title" => println!("Usage: title <window title>"),
         "script" => println!("Usage: rusterminal script <script path>"),
+        "clean" => funcs::clean(),
 
         "dellogs" => {
             println!("Relaunch Rusterminal to reset your logs.");
@@ -359,11 +360,11 @@ fn main() {
                 }
             }
             Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
-                println!("Exiting...");
+                eprintln!("Exiting...");
                 break;
             }
             Err(err) => {
-                println!("Error: {:?}", err);
+                eprintln!("Error: {err:?}");
                 break;
             }
         }
