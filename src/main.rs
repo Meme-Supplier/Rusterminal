@@ -1,6 +1,5 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
-
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
@@ -45,7 +44,7 @@ fn process_input(input: &str) {
             "edit" => println!("Usage: edit <path>"),
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
-            "rusterminal" => rusterminal_help(),
+            "rusterminal" => rusterminal("help"),
 
             _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
             _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
@@ -64,10 +63,6 @@ fn process_input(input: &str) {
             _ => println!("{command}: command not found"),
         }
     }
-}
-
-fn rusterminal_help() {
-    process_input("rusterminal help")
 }
 
 fn rusterminal(cmd: &str) {
