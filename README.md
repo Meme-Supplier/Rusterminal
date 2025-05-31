@@ -1,4 +1,4 @@
-# Rusterminal - A useless  "alternative" to zsh and bash
+# Rusterminal - A useless "alternative" to zsh and bash
 
 ## Current builds:
 
