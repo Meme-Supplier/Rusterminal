@@ -157,3 +157,4 @@
 - Fixed typos
 - Some utilities for people to develop Rusterminal
 - "clean" command now cleans your system more
+- "clean" command is now a subcommand to the "rusterminal" command
