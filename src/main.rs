@@ -1,5 +1,6 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
+
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
