@@ -158,3 +158,11 @@
 - Some utilities for people to develop Rusterminal
 - "clean" command now cleans your system more
 - "clean" command is now a subcommand to the "rusterminal" command
+
+# v0.3.3
+- Code cleanup, made it look nicer
+- You can now also use the new "reboot" command to restart your system
+- Bug fixes
+- Code optimizations
+- System information file ver.py is now rewritten in rust (Is now "sysinfo.rs")
+- Removed the configuration "showSystemInformationInVerCMD"
