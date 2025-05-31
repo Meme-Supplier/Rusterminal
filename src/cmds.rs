@@ -19,7 +19,7 @@ pub fn list() {
         "python / python3",
         "run <command>",
         "rusterminal",
-        "restart",
+        "restart / reboot",
         "shutdown",
         "wait <time>",
         "",
