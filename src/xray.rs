@@ -1,13 +1,12 @@
 #!/usr/bin/env rust-script
-
-/* 2025 Meme Supplier
-memesupplierbusiness@gmail.com
-Maintained by Meme Supplier */
+#[cfg(target_os = "linux")]
 
 use crate::funcs::run_shell_command;
+use crate::logger::log;
+
 use std::io::{self, Write};
 
-static VERSION: &str = "2.1";
+static VERSION: &str = "2.3";
 
 fn list() {
     let lines: [&str; 9] = [
@@ -23,7 +22,7 @@ fn list() {
     ];
 
     for line in lines.iter() {
-        println!("{line}");
+        println!("{line}")
     }
 }
 
@@ -34,12 +33,13 @@ fn choose(input: &str) {
         "1" => Some("main.rs"),
         "2" => Some("cmds.rs"),
         "3" => Some("funcs.rs"),
-        "4" => Some("diskfmt.py"),
-        "5" => Some("ver.py"),
-        "6" => Some("xray.rs"),
-        "7" => Some("upgrade.sh"),
-        "8" => Some("launch.sh"),
-        "9" => Some("uninstall.sh"),
+        "4" => Some("logger.rs"),
+        "5" => Some("diskfmt.py"),
+        "6" => Some("ver.py"),
+        "7" => Some("xray.rs"),
+        "8" => Some("upgrade.sh"),
+        "9" => Some("launch.sh"),
+        "10" => Some("uninstall.sh"),
         _ => {
             println!("{input}: Invalid filename!");
             None
@@ -47,15 +47,21 @@ fn choose(input: &str) {
     };
 
     if let Some(file) = file {
+        log(&format!("xray::choose(): Viewing file: {file}"));
+
         if file == "upgrade.sh" || file == "uninstall.sh" {
             run_shell_command(&format!("nano ~/rusterminal/installer/{file}"))
         } else {
-            run_shell_command(&format!("nano ~/rusterminal/src/{file}"));
+            run_shell_command(&format!("nano ~/rusterminal/src/{file}"))
         }
     }
 }
 
 pub fn main() {
+    log(&format!(
+        "xray::main(): Rusterminal Viewer version: {VERSION}"
+    ));
+
     println!("\nRusterminal Viewer v{VERSION}\n\nChoose file to view (select number):\nType \"0\" or \"exit\" to exit.\n");
     list();
 
@@ -70,5 +76,5 @@ pub fn main() {
 
     choose(&input);
     print!("\n");
-    run_shell_command("clear");
+    run_shell_command("clear")
 }

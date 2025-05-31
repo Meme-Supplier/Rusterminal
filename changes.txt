@@ -146,3 +146,14 @@
 - Overhaul to the "rusterminal upgrade" command
 - Bug fixes
 - Code optimizations
+
+# v0.3.2
+- "script" subcommand in "rusterminal" command
+- Bug fixes
+- Code optimizations
+- Logging, useful for fixing problems
+- Updated dependencies
+- New subcommands "logs" and "dellogs" in command "rusterminal"
+- Fixed typos
+- Some utilities for people to develop Rusterminal
+- "clean" command now cleans your system more

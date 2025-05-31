@@ -1,14 +1,9 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
 
-/* 2025 Meme Supplier
-memesupplierbusiness@gmail.com
-Maintained by Meme Supplier */
-
 pub fn list() {
-    let lines: [&str; 21] = [
+    let lines: [&str; 20] = [
         "",
-        "clean",
         "clear",
         "copy <path>",
         "del <path>",
@@ -31,6 +26,6 @@ pub fn list() {
     ];
 
     for line in lines.iter() {
-        println!("{line}");
+        println!("{line}")
     }
 }
