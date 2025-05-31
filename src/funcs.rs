@@ -1,24 +1,19 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
-
 use regex::Regex;
 use rustc_version_runtime::version;
-use std;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
-use std::process::exit;
-use std::process::{Command, Stdio};
+use std::process::{exit, Command, Stdio};
 
+use crate::logger::{get_time, init, log};
 use crate::process_input;
+use crate::sysinfo::get_system_info;
 
-use crate::logger::get_time;
-use crate::logger::init;
-use crate::logger::log;
-
-pub const VERSION: &str = "v0.3.2";
+pub const VERSION: &str = "v0.3.3-beta1";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -75,14 +70,14 @@ pub fn exit_rusterminal() {
         }
         Some(_) => {
             log("funcs::exit_rusterminal(): Exiting Rusterminal...");
-            init(&format!("\n===== End Session {} =====\n", get_time()));
+            init(&format!("\n===== End Session {} =====", get_time()));
             exit(0)
         }
         None => {
             println!(
-                "Setting 'cleanCompileOnStartup' not found in config!\nTry reloading Rusterminal!"
+                "Setting \"cleanCompileOnStartup\" not found in config!\nTry reloading Rusterminal!"
             );
-            log("funcs::exit_rusterminal(): Setting 'cleanCompileOnStartup' not found in config!")
+            log("funcs::exit_rusterminal(): Setting \"cleanCompileOnStartup\" not found in config!")
         }
     }
 }
@@ -146,8 +141,8 @@ pub fn clean() {
             }
             Some(_) => {}
             None => {
-                println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
-                log("funcs::clean(): Setting 'considerYayAsAPackageManager' not found in config!")
+                println!("Setting \"considerYayAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                log("funcs::clean(): Setting \"considerYayAsAPackageManager\" not found in config!")
             }
         }
 
@@ -161,8 +156,8 @@ pub fn clean() {
             }
             Some(_) => {}
             None => {
-                println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
-                log("funcs::clean(): Setting 'considerParuAsAPackageManager' not found in config!")
+                println!("Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                log("funcs::clean(): Setting \"considerParuAsAPackageManager\" not found in config!")
             }
         }
     }
@@ -231,8 +226,8 @@ pub fn update() {
             Some("true") => run_shell_command("yay -Syyu"),
             Some(_) => {}
             None => {
-                println!("Setting 'considerYayAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
-                log("Setting 'considerYayAsAPackageManager' not found in config!")
+                println!("Setting \"considerYayAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                log("Setting \"considerYayAsAPackageManager\" not found in config!")
             }
         }
 
@@ -243,8 +238,8 @@ pub fn update() {
             Some("true") => run_shell_command("paru -Syyu"),
             Some(_) => {}
             None => {
-                println!("Setting 'considerParuAsAPackageManager' not found in config!\nTry reloading Rusterminal!");
-                log("funcs::update(): Setting 'considerParuAsAPackageManager' not found in config!")
+                println!("Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                log("funcs::update(): Setting \"considerParuAsAPackageManager\" not found in config!")
             }
         }
     }
@@ -264,21 +259,18 @@ pub fn web(url: &str) {
 pub fn ver() {
     println!("\nRusterminal version: {VERSION}");
     println!("Rust version: {}", rustc_version::version().unwrap());
+    println!("Python version: {}\n", get_python_version());
 
-    match load_configs()
-        .get("showSystemInformationInVerCMD")
-        .map(String::as_str)
-    {
-        Some("true") => {
-            let home_dir = env::var("HOME").expect("Failed to get HOME directory");
-            run_python(&format!("{home_dir}/rusterminal/src/ver.py"))
-        }
-        Some(_) => {}
-        None => {
-            println!("Setting \"showSystemInformationInVerCMD\" not found in config!\nTry reloading Rusterminal!");
-            log("funcs::ver(): Setting \"showSystemInformationInVerCMD\" not found in config!")
-        }
-    }
+    let system_info = get_system_info();
+
+    println!("Desktop Environment: {}", system_info.desktop_environment);
+    println!(
+        "Window Manger: {} ({})",
+        system_info.window_manager, system_info.display_protocol
+    );
+    println!("Distro: {}", system_info.distro);
+    println!("Shell: {}", system_info.shell);
+    println!("Preferred package manager: {}\n", detect_package_manager())
 }
 
 pub fn run_shell_command(cmd: &str) {
@@ -317,14 +309,14 @@ pub fn detect_package_manager() -> String {
         }
         Some(_) => "none".to_string(),
         None => {
-            log("funcs::detect_package_manager(): Setting 'forceDisablePackageManagerCheck' not found in config!");
-            println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!");
+            log("funcs::detect_package_manager(): Setting \"forceDisablePackageManagerCheck\" not found in config!");
+            println!("Setting \"forceDisablePackageManagerCheck\" not found in config!\nTry reloading Rusterminal!");
             "none".to_string()
         }
     }
 }
 
-pub fn help() {
+pub fn get_python_version() -> String {
     let output = Command::new("python3")
         .arg("--version")
         .output()
@@ -343,7 +335,12 @@ pub fn help() {
         .map(|m| m.as_str())
         .unwrap_or("unknown");
 
+    python_version.to_string()
+}
+
+pub fn help() {
     let rust_version = version();
+    let python_version = get_python_version();
 
     println!("Rusterminal {VERSION} (Rustc {rust_version}) (Python {python_version})");
     println!("Type \"rusterminal\" to get started.\n")
