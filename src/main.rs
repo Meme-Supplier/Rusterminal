@@ -1,6 +1,5 @@
 #!/usr/bin/env rust-script
 #[cfg(target_os = "linux")]
-
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
@@ -11,11 +10,12 @@ use std::{env, io};
 mod cmds;
 mod funcs;
 mod logger;
+mod sysinfo;
 mod xray;
 
 fn process_input(input: &str) {
     logger::log(&format!(
-        "main::process_input(): Executing command: {input}"
+        "main::process_input(): Executing command: \"{input}\""
     ));
 
     for command in input.split("&&").map(|s| s.trim()) {
@@ -28,7 +28,7 @@ fn process_input(input: &str) {
             "exit" => funcs::exit_rusterminal(),
             "help" => funcs::help(),
             "shutdown" => funcs::run_shell_command("sudo shutdown now"),
-            "restart" => funcs::run_shell_command("sudo reboot"),
+            "restart" | "reboot" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
             "fmtdsk" => funcs::fmtdsk(),
 
@@ -69,7 +69,7 @@ fn process_input(input: &str) {
 fn rusterminal(cmd: &str) {
     let config = funcs::load_configs();
     logger::log(&format!(
-        "main::rusterminal(): Executing command in subcommand \"rusterminal()\": {cmd}"
+        "main::rusterminal(): Executing command in subcommand \"rusterminal()\": \"{cmd}\""
     ));
 
     let lines: [&str; 19] = [
@@ -157,26 +157,21 @@ fn rusterminal(cmd: &str) {
         "build" => {
             let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
             logger::log(&format!("main::rusterminal(): Building Rusterminal to {path}."));
-
             let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
             funcs::run_shell_command(&command);
-
             logger::log("main::rusterminal(): Build successful.")
         }
 
         "settings" => {
             logger::log("main::rusterminal(): Changing settings...");
-
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
-
             logger::log("main::rusterminal(): Changed settings successfully.");
-
             match config.get("showReminderToSaveSettings").map(String::as_str) {
                 Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
                 Some(_) => {}
                 None => {
-                    println!("Setting 'showReminderToSaveSettings' not found in config!\nTry reloading Rusterminal!");
-                    logger::log("main::rusterminal(): Setting 'showReminderToSaveSettings' not found in config!")
+                    println!("Setting \"showReminderToSaveSetting\" not found in config!\nTry reloading Rusterminal!");
+                    logger::log("main::rusterminal(): Setting \"showReminderToSaveSettings\" not found in config!")
                 }
             }
         }
@@ -186,8 +181,8 @@ fn rusterminal(cmd: &str) {
                 Some("false") => funcs::update(),
                 Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
                 None => {
-                    println!("Setting 'disableUpdateCMD' not found in config!\nTry reloading Rusterminal!");
-                    logger::log("main::rusterminal(): Setting 'showReminderToSaveSettings' not found in config!")
+                    println!("Setting \"disableUpdateCMD\" not found in config!\nTry reloading Rusterminal!");
+                    logger::log("main::rusterminal(): Setting \"showReminderToSaveSettings\" not found in config!")
                 }
             }
         }
@@ -214,8 +209,8 @@ fn get_prompt() -> String {
             }
             Some(_) => "rusterminal$~: ".to_string(),
             None => {
-                println!("Setting 'useHostnameInPrompt' not found in config!\nTry reloading Rusterminal!");
-                logger::log("Setting 'useHostnameInPrompt' not found in config!");
+                println!("Setting \"useHostnameInPrompt\" not found in config!\nTry reloading Rusterminal!");
+                logger::log("\"Setting 'useHostnameInPrompt\" not found in config!");
                 "rusterminal$~: ".to_string()
             }
         },
@@ -232,8 +227,8 @@ fn get_prompt() -> String {
             .unwrap_or_else(|| "rusterminal$~: ".to_string()),
         Some(_) => "rusterminal$~: ".to_string(), // fallback for unknown promptType
         None => {
-            println!("Setting 'promptType' not found in config!\nTry reloading Rusterminal!");
-            logger::log("Setting 'promptType' not found in config!");
+            println!("Setting \"promptType\" not found in config!\nTry reloading Rusterminal!");
+            logger::log("Setting \"promptType\" not found in config!");
             "rusterminal$~: ".to_string()
         }
     };
@@ -278,8 +273,8 @@ fn check_compatability() {
             }
         }
         None => {
-            println!("Setting 'forceUniversalOScompatability' not found in config!\nTry reloading Rusterminal!");
-            logger::log("main::check_compatability(): Setting 'forceUniversalOScompatability' not found in config!")
+            println!("Setting \"forceUniversalOScompatability\" not found in config!\nTry reloading Rusterminal!");
+            logger::log("main::check_compatability(): Setting \"forceUniversalOScompatability\" not found in config!")
         }
     }
 
@@ -300,8 +295,8 @@ fn check_compatability() {
         }
         Some(_) => {}
         None => {
-            println!("Setting 'forceDisablePackageManagerCheck' not found in config!\nTry reloading Rusterminal!");
-            logger::log("main::check_compatibility(): Setting 'forceDisablePackageManagerCheck' not found in config!")
+            println!("Setting \"forceDisablePackageManagerCheck\" not found in config!\nTry reloading Rusterminal!");
+            logger::log("main::check_compatibility(): Setting \"forceDisablePackageManagerCheck\" not found in config!")
         }
     }
 }
@@ -312,14 +307,16 @@ fn init() {
 
     check_compatability();
 
+    logger::log("main::init(): System is compatible, launching...");
+
     match config.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
         Some(_) => print!("\n"),
         None => {
             println!(
-                "Setting 'clearScreenOnStartup' not found in config!\nTry reloading Rusterminal!"
+                "Setting \"clearScreenOnStartup\" not found in config!\nTry reloading Rusterminal!"
             );
-            logger::log("main::init(): Setting 'clearScreenOnStartup' not found in config!")
+            logger::log("main::init(): Setting \"clearScreenOnStartup\" not found in config!")
         }
     }
 
@@ -328,16 +325,16 @@ fn init() {
         Some(_) => {}
         None => {
             println!(
-                "Setting 'helpFuncOnStartup' not found in config!\nTry reloading Rusterminal!"
+                "Setting \"helpFuncOnStartup\" not found in config!\nTry reloading Rusterminal!"
             );
-            logger::log("main::init(): Setting 'helpFuncOnStartup' not found in config!")
+            logger::log("main::init(): Setting \"helpFuncOnStartup\" not found in config!")
         }
     }
 }
 
 fn main() {
     logger::init(&format!(
-        "===== Start session {} =====\n",
+        "\n===== Start session {} =====\n",
         &logger::get_time()
     ));
 
