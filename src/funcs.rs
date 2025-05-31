@@ -14,7 +14,7 @@ use std::process::{Command, Stdio};
 use regex::Regex;
 use rustc_version_runtime::version;
 
-pub const VERSION: &str = "v0.3.1";
+pub const VERSION: &str = "v0.3.2";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
