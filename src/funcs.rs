@@ -18,7 +18,7 @@ use crate::logger::get_time;
 use crate::logger::init;
 use crate::logger::log;
 
-pub const VERSION: &str = "v0.3.2-rc1";
+pub const VERSION: &str = "v0.3.2";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
