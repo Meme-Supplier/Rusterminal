@@ -2,9 +2,8 @@
 #[cfg(target_os = "linux")]
 
 pub fn list() {
-    let lines: [&str; 21] = [
+    let lines: [&str; 20] = [
         "",
-        "clean",
         "clear",
         "copy <path>",
         "del <path>",
