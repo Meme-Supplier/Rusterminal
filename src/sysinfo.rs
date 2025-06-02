@@ -1,9 +1,7 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
-use std::env;
-use std::fmt;
-use std::fs;
+
 use std::process::Command;
+use std::{env, fmt, fs};
 
 fn get_desktop_environment() -> String {
     env::var("XDG_CURRENT_DESKTOP")
