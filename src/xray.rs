@@ -1,5 +1,5 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
+
 use std::io::{self, Write};
 
 use crate::funcs::run_shell_command;
