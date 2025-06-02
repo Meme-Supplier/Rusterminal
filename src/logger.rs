@@ -1,5 +1,5 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
+
 use chrono::Local;
 use std::env;
 use std::fs::OpenOptions;
