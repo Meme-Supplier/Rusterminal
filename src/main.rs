@@ -1,11 +1,13 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
+
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
 use std::io::Write;
 use std::process::exit;
 use std::{env, io};
+
+use crate::funcs::run_shell_command;
 
 mod cmds;
 mod funcs;
@@ -72,7 +74,7 @@ fn rusterminal(cmd: &str) {
         "main::rusterminal(): Executing command in subcommand \"rusterminal()\": \"{cmd}\""
     ));
 
-    let lines: [&str; 19] = [
+    let lines: [&str; 20] = [
         "",
         "Available Commands:",
         "",
@@ -82,6 +84,7 @@ fn rusterminal(cmd: &str) {
         "  dellogs",
         "  help",
         "  logs",
+        "  reset",
         "  rmtitle",
         "  script <file path>",
         "  settings",
@@ -104,6 +107,18 @@ fn rusterminal(cmd: &str) {
         "title" => println!("Usage: title <window title>"),
         "script" => println!("Usage: rusterminal script <script path>"),
         "clean" => funcs::clean(),
+
+        "reset" => {
+            logger::log("main::rusterminal(): Resetting Rusterminal to it's default settings...");
+            println!("Resetting Rusterminal to it's default settings...");
+
+            run_shell_command("cd ~/.config/rusterminal/ && rm -f settings.conf && mv defaults.conf settings.conf && cp settings.conf settings2.conf && mv settings2.conf defaults.conf");
+
+            logger::log("main::rusterminal(): Rusterminal has been reset to its defaults.");
+            println!("\nRusterminal has been reset to its defaults.\nPlease relaunch Rusterminal for changes to take effect.");
+
+            exit(0)
+        }
 
         "dellogs" => {
             println!("Relaunch Rusterminal to reset your logs.");
