@@ -87,6 +87,9 @@ cp launch.sh ~/rusterminal
 cp Cargo.toml ~/rusterminal/
 mkdir -p ~/.config/rusterminal
 cp ~/Rusterminal/config/settings.conf ~/.config/rusterminal/
+cd ~/.config/rusterminal/
+cp settings.conf settings2.conf
+mv settings2.conf defaults.conf
 
 chmod +x ~/rusterminal/launch.sh
 sudo ln -sf ~/rusterminal/launch.sh /usr/local/bin/rusterminal
