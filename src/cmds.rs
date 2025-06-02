@@ -1,5 +1,4 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
 
 pub fn list() {
     let lines: [&str; 20] = [
