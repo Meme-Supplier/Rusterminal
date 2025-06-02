@@ -5,4 +5,4 @@
 # Maintained by Meme Supplier
 
 cd ~/rusterminal || exit 1
-cargo run main.rs
+cargo run --release
