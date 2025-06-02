@@ -1,19 +1,18 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
+
 use regex::Regex;
 use rustc_version_runtime::version;
 use std::collections::HashMap;
-use std::env;
-use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 use std::process::{exit, Command, Stdio};
+use std::{env, fs};
 
 use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3-beta1";
+pub const VERSION: &str = "v0.3.3-beta2";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -163,7 +162,7 @@ pub fn clean() {
     }
 
     log("funcs::clean(): Cleaning up system cache...");
-    run_shell_command("sudo rm -rf ~/.cache || exit")
+    run_shell_command("sudo rm -rf ~/.cache || exit 1")
 }
 
 pub fn echo(text: &str) {
@@ -240,6 +239,18 @@ pub fn update() {
             None => {
                 println!("Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
                 log("funcs::update(): Setting \"considerParuAsAPackageManager\" not found in config!")
+            }
+        }
+
+        match load_configs()
+            .get("considerFlatpakAsAPackageManager")
+            .map(String::as_str)
+        {
+            Some("true") => run_shell_command("flatpak update"),
+            Some(_) => {}
+            None => {
+                println!("Setting \"considerFlatpakAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                log("funcs::update(): Setting \"considerFlatpakAsAPackageManager\" not found in config!")
             }
         }
     }
