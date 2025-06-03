@@ -166,6 +166,8 @@
 - Code optimizations
 - System information file ver.py is now rewritten in rust (Is now "sysinfo.rs")
 - Removed the configuration "showSystemInformationInVerCMD"
-- Flatpak support has been added
-- New configuration: "considerFlatpakAsAPackageManager"
+- Flatpak support has been added in Rusterminal's configs
+- New configurations: "considerFlatpakAsAPackageManager" and "rusterminalBuildCommand"
 - You can now reset Rusterminal's settings by using the command "reset" in the "rusterminal" subcommand
+- "rename" command
+- Quality of life changes
