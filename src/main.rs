@@ -7,8 +7,6 @@ use std::io::Write;
 use std::process::exit;
 use std::{env, io};
 
-use crate::funcs::run_shell_command;
-
 mod cmds;
 mod funcs;
 mod logger;
@@ -48,6 +46,7 @@ fn process_input(input: &str) {
             "copy" => println!("Usage: copy <flag> <path>"),
             "newdir" => println!("Usage: newdir <path>"),
             "rusterminal" => rusterminal("help"),
+            "rename" => println!("Usage: rename <files>"),
 
             _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
             _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
@@ -61,6 +60,7 @@ fn process_input(input: &str) {
             _ if command.starts_with("copy ") => funcs::copy(&command[5..]),
             _ if command.starts_with("in ") => funcs::input(&command[3..]),
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
+            _ if command.starts_with("rename ") => funcs::rename(&command[7..]),
             _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
 
             _ => println!("{command}: command not found"),
@@ -112,7 +112,7 @@ fn rusterminal(cmd: &str) {
             logger::log("main::rusterminal(): Resetting Rusterminal to it's default settings...");
             println!("Resetting Rusterminal to it's default settings...");
 
-            run_shell_command("cd ~/.config/rusterminal/ && rm -f settings.conf && mv defaults.conf settings.conf && cp settings.conf settings2.conf && mv settings2.conf defaults.conf");
+            funcs::run_shell_command("cd ~/.config/rusterminal/ && rm -f settings.conf && mv defaults.conf settings.conf && cp settings.conf settings2.conf && mv settings2.conf defaults.conf");
 
             logger::log("main::rusterminal(): Rusterminal has been reset to its defaults.");
             println!("\nRusterminal has been reset to its defaults.\nPlease relaunch Rusterminal for changes to take effect.");
@@ -135,7 +135,7 @@ fn rusterminal(cmd: &str) {
         }
 
         "upgrade" => {
-            print!("Pick a channel to update to:\n\nbeta\nmain\n\nType \"exit\" to exit.\n\nChoice: ");
+            print!("Pick a channel to update to:\n\n1] beta (Newest features, may not be stable)\n2] main (Latest stable version)\n\nType \"exit\" to exit.\n\nChoice: ");
 
             let mut input = String::new();
             io::stdout().flush().expect("Failed to flush");
@@ -143,12 +143,12 @@ fn rusterminal(cmd: &str) {
                 .read_line(&mut input)
                 .expect("Failed to read line");
 
-            if input.trim() == "beta" {
+            if input.trim() == "beta" || input.trim() == "1" {
                 logger::log("main::rusterminal(): Updating Rusterminal to Beta branch...");
                 funcs::run_shell_command("cd ~/ && git clone --branch beta --single-branch https://github.com/Meme-Supplier/Rusterminal && cd ~/Rusterminal/installer && bash install.sh");
                 logger::log("main::rusterminal(): Update successful.");
                 exit(0)
-            } else if  input.trim() == "main" {
+            } else if input.trim() == "main" || input.trim() == "2" {
                 logger::log("main::rusterminal(): Updating Rusterminal to Main branch...");
                 funcs::run_shell_command("cd ~/rusterminal/installer/ && bash upgrade.sh");
                 logger::log("main::rusterminal(): Update successful.");
@@ -158,6 +158,8 @@ fn rusterminal(cmd: &str) {
 
                 if input.trim() != "exit" {
                     println!("Invalid option! Please pick between \"beta\" and \"main\".")
+                } else {
+                    println!("Operation canceled.")
                 }
             }
         }
@@ -171,9 +173,10 @@ fn rusterminal(cmd: &str) {
 
         "build" => {
             let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-            logger::log(&format!("main::rusterminal(): Building Rusterminal to {path}."));
-            let command = format!("cd ~/rusterminal && cargo build && cd target/debug/ && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\"");
-            funcs::run_shell_command(&command);
+            let build_command: &str = &config.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..config.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..].len()];
+
+            logger::log(&format!("main::rusterminal(): Building Rusterminal to \"{path}\" using command \"{build_command}\"."));
+            funcs::run_shell_command(&format!("cd ~/rusterminal && {build_command} && cd target/debug || cd target/release && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\""));
             logger::log("main::rusterminal(): Build successful.")
         }
 
