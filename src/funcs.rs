@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3-beta2";
+pub const VERSION: &str = "v0.3.3-beta3";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -20,7 +20,7 @@ pub fn load_configs() -> HashMap<String, String> {
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
 
-    let mut config = HashMap::new();
+    let mut config: HashMap<String, String> = HashMap::new();
 
     for line in content.lines() {
         let line = line.trim();
@@ -40,7 +40,7 @@ pub fn run_rusterminal_script(path: &str) {
         "funcs::run_rusterminal_script(): Running Rusterminal script: {path}"
     ));
 
-    let file = File::open(path);
+    let file: Result<File, io::Error> = File::open(path);
     if let Ok(file) = file {
         let reader = BufReader::new(file);
         for line_result in reader.lines() {
@@ -101,13 +101,17 @@ pub fn fmtdsk() {
     log("funcs::fmtdsk(): Disk formatting successful.")
 }
 
+pub fn rename(files: &str) {
+    run_shell_command(&format!("mv {files}"));
+}
+
 pub fn new_dir(dir: &str) {
     log(&format!("funcs::new_dir(): Creating directory: {dir}"));
     run_shell_command(&format!("mkdir {dir}"))
 }
 
 pub fn input(str: &str) {
-    let mut input = String::new();
+    let mut input: String = String::new();
 
     println!("{str}");
     io::stdout().flush().expect("Failed to flush");
