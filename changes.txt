@@ -171,3 +171,4 @@
 - You can now reset Rusterminal's settings by using the command "reset" in the "rusterminal" subcommand
 - "rename" command
 - Quality of life changes
+- Removed some unused dependencies
