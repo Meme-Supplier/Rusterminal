@@ -3,8 +3,10 @@
 use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
+use std::collections::HashMap;
 use std::io::Write;
 use std::process::exit;
+use std::sync::LazyLock;
 use std::{env, io};
 
 mod cmds;
@@ -12,6 +14,8 @@ mod funcs;
 mod logger;
 mod sysinfo;
 mod xray;
+
+static CONFIGS: LazyLock<HashMap<String, String>> = LazyLock::new(|| funcs::load_configs());
 
 fn process_input(input: &str) {
     logger::log(&format!(
@@ -63,7 +67,19 @@ fn process_input(input: &str) {
             _ if command.starts_with("rename ") => funcs::rename(&command[7..]),
             _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
 
-            _ => println!("{command}: command not found"),
+            _ => {
+                match CONFIGS
+                    .get("treatRusterminalLikeARealShell")
+                    .map(String::as_str)
+                {
+                    Some("true") => funcs::run_shell_command(command),
+                    Some(_) => println!("{command}: Command not found"),
+                    None => {
+                        println!("Setting \"treatRusterminalLikeARealShell\" not found in config!\nTry reloading Rusterminal!");
+                        logger::log("main::process_input(): Setting \"treatRusterminalLikeARealShell\" not found in config!")
+                    }
+                }
+            }
         }
     }
 }
@@ -321,13 +337,12 @@ fn check_compatability() {
 
 fn init() {
     funcs::set_window_title("Rusterminal");
-    let config = funcs::load_configs();
 
     check_compatability();
 
     logger::log("main::init(): System is compatible, launching...");
 
-    match config.get("clearScreenOnStartup").map(String::as_str) {
+    match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
         Some(_) => print!("\n"),
         None => {
@@ -338,7 +353,7 @@ fn init() {
         }
     }
 
-    match config.get("helpFuncOnStartup").map(String::as_str) {
+    match CONFIGS.get("helpFuncOnStartup").map(String::as_str) {
         Some("true") => funcs::help(),
         Some(_) => {}
         None => {
@@ -357,7 +372,6 @@ fn main() {
     ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
-    let config = funcs::load_configs();
     logger::log("main::main(): Loaded configurations");
     let prompt: String = get_prompt();
 
@@ -368,7 +382,7 @@ fn main() {
             Ok(line) => {
                 let input = line.trim();
                 if !input.is_empty() {
-                    if let Some("true") = config.get("commandHistoryEnabled").map(String::as_str) {
+                    if let Some("true") = CONFIGS.get("commandHistoryEnabled").map(String::as_str) {
                         let _ = rl.add_history_entry(input);
                     }
                     process_input(input)
