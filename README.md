@@ -3,7 +3,7 @@
 ## Current builds:
 
 - Latest release: **(v0.3.2)**
-- Latest beta: **(v0.3.3-beta2)**
+- Latest beta: **(v0.3.3-beta4)**
 
 # Tested on:
 
