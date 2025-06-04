@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3-beta3";
+pub const VERSION: &str = "v0.3.3-beta4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -42,7 +42,7 @@ pub fn run_rusterminal_script(path: &str) {
 
     let file: Result<File, io::Error> = File::open(path);
     if let Ok(file) = file {
-        let reader = BufReader::new(file);
+        let reader: BufReader<File> = BufReader::new(file);
         for line_result in reader.lines() {
             if let Ok(line) = line_result {
                 process_input(&line)
@@ -289,21 +289,37 @@ pub fn ver() {
 }
 
 pub fn run_shell_command(cmd: &str) {
-    log(&format!(
-        "funcs::run_shell_command(): Running shell command: {cmd}"
-    ));
-
     if cmd.trim().is_empty() {
+        log("funcs::run_shell_command(): Empty command received, skipping.");
         return;
     }
 
-    let _ = Command::new("sh")
+    log("funcs::run_shell_command(): Running shell command:");
+    log(cmd); // Preserves spacing and newlines exactly
+
+    match Command::new("sh")
         .arg("-c")
         .arg(cmd)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
-        .status();
+        .status()
+    {
+        Ok(status) if status.success() => {
+            log("funcs::run_shell_command(): Command executed successfully.");
+        }
+        Ok(status) => {
+            log(&format!(
+                "funcs::run_shell_command(): Command exited with status: {}",
+                status
+            ));
+        }
+        Err(e) => {
+            log(&format!(
+                "funcs::run_shell_command(): Failed to execute command: {e}"
+            ));
+        }
+    }
 }
 
 pub fn detect_package_manager() -> String {
