@@ -85,7 +85,6 @@ fn process_input(input: &str) {
 }
 
 fn rusterminal(cmd: &str) {
-    let config = funcs::load_configs();
     logger::log(&format!(
         "main::rusterminal(): Executing command in subcommand \"rusterminal()\": \"{cmd}\""
     ));
@@ -188,8 +187,8 @@ fn rusterminal(cmd: &str) {
         }
 
         "build" => {
-            let path = config.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-            let build_command: &str = &config.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..config.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..].len()];
+            let path = CONFIGS.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
+            let build_command: &str = &CONFIGS.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..CONFIGS.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..].len()];
 
             logger::log(&format!("main::rusterminal(): Building Rusterminal to \"{path}\" using command \"{build_command}\"."));
             funcs::run_shell_command(&format!("cd ~/rusterminal && {build_command} && cd target/debug || cd target/release && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\""));
@@ -200,7 +199,7 @@ fn rusterminal(cmd: &str) {
             logger::log("main::rusterminal(): Changing settings...");
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
             logger::log("main::rusterminal(): Changed settings successfully.");
-            match config.get("showReminderToSaveSettings").map(String::as_str) {
+            match CONFIGS.get("showReminderToSaveSettings").map(String::as_str) {
                 Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
                 Some(_) => {}
                 None => {
@@ -211,7 +210,7 @@ fn rusterminal(cmd: &str) {
         }
 
         "update" => {
-            match config.get("disableUpdateCMD").map(String::as_str) {
+            match CONFIGS.get("disableUpdateCMD").map(String::as_str) {
                 Some("false") => funcs::update(),
                 Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
                 None => {
@@ -231,10 +230,8 @@ fn rusterminal(cmd: &str) {
 fn get_prompt() -> String {
     logger::log("main::get_prompt(): Setting user prompt...");
 
-    let config = funcs::load_configs();
-
-    let prompt = match config.get("promptType").map(String::as_str) {
-        Some("default") => match config.get("useHostnameInPrompt").map(String::as_str) {
+    let prompt = match CONFIGS.get("promptType").map(String::as_str) {
+        Some("default") => match CONFIGS.get("useHostnameInPrompt").map(String::as_str) {
             Some("true") => {
                 let hostname = get()
                     .map(|h| h.to_string_lossy().into_owned())
@@ -248,7 +245,7 @@ fn get_prompt() -> String {
                 "rusterminal$~: ".to_string()
             }
         },
-        Some("custom") => config
+        Some("custom") => CONFIGS
             .get("customPrompt")
             .map(|s| {
                 let s = s.trim();
@@ -259,7 +256,7 @@ fn get_prompt() -> String {
                 }
             })
             .unwrap_or_else(|| "rusterminal$~: ".to_string()),
-        Some(_) => "rusterminal$~: ".to_string(), // fallback for unknown promptType
+        Some(_) => "rusterminal$~: ".to_string(),
         None => {
             println!("Setting \"promptType\" not found in config!\nTry reloading Rusterminal!");
             logger::log("Setting \"promptType\" not found in config!");
@@ -273,8 +270,6 @@ fn get_prompt() -> String {
 fn check_compatability() {
     logger::log("main::rusterminal(): Checking compatability...");
 
-    let config = funcs::load_configs();
-
     let package_manager = funcs::detect_package_manager();
     let os = env::consts::OS;
 
@@ -287,7 +282,7 @@ fn check_compatability() {
         funcs::VERSION
     ));
 
-    match config
+    match CONFIGS
         .get("forceUniversalOScompatability")
         .map(String::as_str)
     {
@@ -312,7 +307,7 @@ fn check_compatability() {
         }
     }
 
-    match config
+    match CONFIGS
         .get("forceDisablePackageManagerCheck")
         .map(String::as_str)
     {
