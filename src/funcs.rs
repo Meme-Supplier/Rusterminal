@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3-beta4";
+pub const VERSION: &str = "v0.3.3-beta5";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -214,6 +214,11 @@ pub fn wait(time: &str) {
 
 pub fn update() {
     let package_manager = detect_package_manager();
+
+    log("funcs::update(): Updating Rust...");
+    run_shell_command("rustup update");
+
+    log("funcs::update(): Updating system packages...");
 
     if package_manager == "apt" {
         run_shell_command("sudo apt update && sudo apt upgrade") // Debian/Ubuntu
