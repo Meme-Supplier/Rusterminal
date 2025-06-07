@@ -172,3 +172,4 @@
 - "rename" command
 - Quality of life changes
 - Removed some unused dependencies
+- "Update" command now updates rust
