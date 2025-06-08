@@ -132,6 +132,8 @@ fn rusterminal(cmd: &str) {
             logger::log("main::rusterminal(): Rusterminal has been reset to its defaults.");
             println!("\nRusterminal has been reset to its defaults.\nPlease relaunch Rusterminal for changes to take effect.");
 
+            funcs::run_shell_command("rm -rf ~/rusterminal/target");
+
             exit(0)
         }
 
