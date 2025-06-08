@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3-beta5";
+pub const VERSION: &str = "v0.3.3-rc1";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -218,6 +218,8 @@ pub fn update() {
     log("funcs::update(): Updating Rust...");
     run_shell_command("rustup update");
 
+    print!("\n");
+
     log("funcs::update(): Updating system packages...");
 
     if package_manager == "apt" {
@@ -300,7 +302,7 @@ pub fn run_shell_command(cmd: &str) {
     }
 
     log("funcs::run_shell_command(): Running shell command:");
-    log(cmd); // Preserves spacing and newlines exactly
+    log(cmd);
 
     match Command::new("sh")
         .arg("-c")
