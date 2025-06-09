@@ -54,7 +54,7 @@
 ## Method 1:
 `$ rusterminal`
 
-`rusterminal$~: uninstall`
+`rusterminal$~: rusterminal uninstall`
 
 ## Method 2: (If you can't launch Rusterminal)
 
