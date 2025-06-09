@@ -1,8 +1,7 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
 
 pub fn list() {
-    let lines: [&str; 20] = [
+    let lines: [&str; 21] = [
         "",
         "clear",
         "copy <path>",
@@ -17,9 +16,10 @@ pub fn list() {
         "newdir <path>",
         "ping <site>",
         "python / python3",
+        "rename <files>",
         "run <command>",
         "rusterminal",
-        "restart",
+        "restart / reboot",
         "shutdown",
         "wait <time>",
         "",

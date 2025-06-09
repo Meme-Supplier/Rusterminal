@@ -1,24 +1,24 @@
 #!/usr/bin/env rust-script
-#[cfg(target_os = "linux")]
+
+use std::io::{self, Write};
 
 use crate::funcs::run_shell_command;
 use crate::logger::log;
 
-use std::io::{self, Write};
-
-static VERSION: &str = "2.3";
+static VERSION: &str = "2.5";
 
 fn list() {
-    let lines: [&str; 9] = [
+    let lines: [&str; 10] = [
         "1] main.rs",
         "2] cmds.rs",
         "3] funcs.rs",
-        "4] diskfmt.py",
-        "5] ver.py",
-        "6] xray.rs",
-        "7] upgrade.sh",
-        "8] launch.sh",
-        "9] uninstall.sh\n",
+        "4] logger.rs",
+        "5] diskfmt.py",
+        "6] sysinfo.rs",
+        "7] xray.rs",
+        "8] upgrade.sh",
+        "9] launch.sh",
+        "10] uninstall.sh\n",
     ];
 
     for line in lines.iter() {
@@ -35,7 +35,7 @@ fn choose(input: &str) {
         "3" => Some("funcs.rs"),
         "4" => Some("logger.rs"),
         "5" => Some("diskfmt.py"),
-        "6" => Some("ver.py"),
+        "6" => Some("sysinfo.rs"),
         "7" => Some("xray.rs"),
         "8" => Some("upgrade.sh"),
         "9" => Some("launch.sh"),

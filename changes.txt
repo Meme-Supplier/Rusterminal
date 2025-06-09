@@ -158,3 +158,18 @@
 - Some utilities for people to develop Rusterminal
 - "clean" command now cleans your system more
 - "clean" command is now a subcommand to the "rusterminal" command
+
+# v0.3.3
+- Code cleanup, made it look nicer
+- You can now also use the new "reboot" command to restart your system
+- Bug fixes
+- Code optimizations
+- System information file ver.py is now rewritten in rust (Is now "sysinfo.rs")
+- Removed the configuration "showSystemInformationInVerCMD"
+- Flatpak support has been added in Rusterminal's configs
+- New configurations: "considerFlatpakAsAPackageManager" and "rusterminalBuildCommand"
+- You can now reset Rusterminal's settings by using the command "reset" in the "rusterminal" subcommand
+- "rename" command
+- Quality of life changes
+- Removed some unused dependencies
+- "Update" command now updates Rustup

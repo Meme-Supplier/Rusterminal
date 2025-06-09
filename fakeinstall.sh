@@ -5,6 +5,7 @@
 # Maintained by Meme Supplier
 
 # For developers only
+# Replace path names as needed
 
 rm -r ~/rusterminal
 cp -r ~/Documents/Code/Rust/Rusterminal/ ~/
