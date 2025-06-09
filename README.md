@@ -22,7 +22,12 @@
 ## And if you have one of the package managers listed:
 - Apt
 - Dnf
-- Pacman/Yay/Paru
+- Pacman
+
+**Optional:**
+- Flatpak
+- Yay
+- Paru
 
 # Install:
 
