@@ -11,6 +11,7 @@
 - Arch Linux (WSL)
 - Linux Mint
 - Fedora
+- Raspberry PI OS
 
 # For **Linux** machines only.
 ## Supported distros:
