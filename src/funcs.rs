@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3-rc1";
+pub const VERSION: &str = "v0.3.3";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -301,8 +301,7 @@ pub fn run_shell_command(cmd: &str) {
         return;
     }
 
-    log("funcs::run_shell_command(): Running shell command:");
-    log(cmd);
+    log(&format!("funcs::run_shell_command(): Running shell command: {cmd}"));
 
     match Command::new("sh")
         .arg("-c")
