@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.3";
+pub const VERSION: &str = "v0.3.4-beta1";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -41,6 +41,7 @@ pub fn run_rusterminal_script(path: &str) {
     ));
 
     let file: Result<File, io::Error> = File::open(path);
+
     if let Ok(file) = file {
         let reader: BufReader<File> = BufReader::new(file);
         for line_result in reader.lines() {
@@ -130,6 +131,12 @@ pub fn clean() {
         run_shell_command("sudo apt autoremove -y")
     } else if detect_package_manager().as_str() == "dnf" {
         run_shell_command("sudo dnf autoremove -y")
+    } else if detect_package_manager().as_str() == "zypper" {
+        run_shell_command(
+            "sudo zypper remove $(zypper packages --orphaned | awk '/^i/ {print $5}') -y",
+        );
+        run_shell_command("sudo zypper clean --all -y");
+        run_shell_command("sudo rm -rf /var/cache/zypp/packages/* || exit");
     } else {
         run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
         run_shell_command("sudo pacman -S -cc --noconfirm");
@@ -226,6 +233,8 @@ pub fn update() {
         run_shell_command("sudo apt update && sudo apt upgrade") // Debian/Ubuntu
     } else if package_manager == "dnf" {
         run_shell_command("sudo dnf update") // Fedora
+    } else if package_manager == "zypper" { // OpenSuse
+        run_shell_command("sudo zypper update")
     } else {
         run_shell_command("sudo pacman -Syyu"); // Arch
 
@@ -301,7 +310,9 @@ pub fn run_shell_command(cmd: &str) {
         return;
     }
 
-    log(&format!("funcs::run_shell_command(): Running shell command: {cmd}"));
+    log(&format!(
+        "funcs::run_shell_command(): Running shell command: {cmd}"
+    ));
 
     match Command::new("sh")
         .arg("-c")
@@ -340,6 +351,8 @@ pub fn detect_package_manager() -> String {
                 "dnf".to_string()
             } else if Command::new("apt").output().is_ok() {
                 "apt".to_string()
+            } else if Command::new("zypper").output().is_ok() {
+                "zypper".to_string()
             } else {
                 "none".to_string()
             }
