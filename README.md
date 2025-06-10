@@ -3,7 +3,7 @@
 ## Current builds:
 
 - Latest release: **(v0.3.3)**
-- Latest beta: **(v0.3.3)**
+- Latest beta: **(v0.3.4-beta1)**
 
 # Tested on:
 
@@ -19,10 +19,14 @@
 - **Fedora**-based
 - **Arch**-based
 
+**OpenSuse support coming soon!**
+
 ## And if you have one of the package managers listed:
 - Apt
 - Dnf
 - Pacman
+
+**Zypper support coming soon!**
 
 **Optional:**
 - Flatpak
