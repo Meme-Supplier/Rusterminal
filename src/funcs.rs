@@ -234,6 +234,7 @@ pub fn update() {
     } else if package_manager == "dnf" {
         run_shell_command("sudo dnf update") // Fedora
     } else if package_manager == "zypper" { // OpenSuse
+        run_shell_command("sudo zypper refresh");
         run_shell_command("sudo zypper update")
     } else {
         run_shell_command("sudo pacman -Syyu"); // Arch
