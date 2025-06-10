@@ -61,6 +61,12 @@ elif [[ "$PM" == "dnf" ]]; then
     sudo dnf install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano bash parted gcc
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source "$HOME/.cargo/env"
+elif [[ "$PM" == "zypper" ]]; then
+    sudo zypper refresh
+    sudo zypper update -y
+    sudo zypper install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano bash parted
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
 else
     echo "Error: Unsupported package manager."
     read
