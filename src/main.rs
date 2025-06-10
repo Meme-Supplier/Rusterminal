@@ -115,13 +115,20 @@ fn rusterminal(cmd: &str) {
     match cmd {
         "cmds" => cmds::list(),
         "ver" => funcs::ver(),
-        "help" => for line in lines.iter() { println!("{line}") },
-        "credits" => println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n"),
+        "help" => {
+            for line in lines.iter() {
+                println!("{line}")
+            }
+        }
+        "credits" => {
+            println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n")
+        }
         "rmtitle" => funcs::set_window_title("Rusterminal"),
         "xray" => xray::main(),
         "title" => println!("Usage: title <window title>"),
         "script" => println!("Usage: rusterminal script <script path>"),
         "clean" => funcs::clean(),
+        "update" => funcs::update(),
 
         "reset" => {
             logger::log("main::rusterminal(): Resetting Rusterminal to it's default settings...");
@@ -189,8 +196,22 @@ fn rusterminal(cmd: &str) {
         }
 
         "build" => {
-            let path = CONFIGS.get("rusterminalBuildPath").map(|s| s.as_str()).unwrap_or_default();
-            let build_command: &str = &CONFIGS.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..CONFIGS.get("rusterminalBuildCommand").map(|s| s.as_str()).unwrap_or_default()[1..].len()];
+            let path = &CONFIGS
+                .get("rusterminalBuildPath")
+                .map(|s| s.as_str())
+                .unwrap_or_default()[1..CONFIGS
+                .get("rusterminalBuildPath")
+                .map(|s| s.as_str())
+                .unwrap_or_default()[1..]
+                .len()];
+            let build_command: &str = &CONFIGS
+                .get("rusterminalBuildCommand")
+                .map(|s| s.as_str())
+                .unwrap_or_default()[1..CONFIGS
+                .get("rusterminalBuildCommand")
+                .map(|s| s.as_str())
+                .unwrap_or_default()[1..]
+                .len()];
 
             logger::log(&format!("main::rusterminal(): Building Rusterminal to \"{path}\" using command \"{build_command}\"."));
             funcs::run_shell_command(&format!("cd ~/rusterminal && {build_command} && cd target/debug || cd target/release && cp Rusterminal {path} && echo -e \"\nBuilt Rusterminal to \\\"{path}\\\".\nYou can change the path in Rusterminal's configurations.\n\""));
@@ -201,7 +222,10 @@ fn rusterminal(cmd: &str) {
             logger::log("main::rusterminal(): Changing settings...");
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
             logger::log("main::rusterminal(): Changed settings successfully.");
-            match CONFIGS.get("showReminderToSaveSettings").map(String::as_str) {
+            match CONFIGS
+                .get("showReminderToSaveSettings")
+                .map(String::as_str)
+            {
                 Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
                 Some(_) => {}
                 None => {
@@ -211,21 +235,10 @@ fn rusterminal(cmd: &str) {
             }
         }
 
-        "update" => {
-            match CONFIGS.get("disableUpdateCMD").map(String::as_str) {
-                Some("false") => funcs::update(),
-                Some(_) => println!("\n\"update\" command disabled!\nRun command \"settings\" and look for the line \"disableUpdateCMD\".\n"),
-                None => {
-                    println!("Setting \"disableUpdateCMD\" not found in config!\nTry reloading Rusterminal!");
-                    logger::log("main::rusterminal(): Setting \"showReminderToSaveSettings\" not found in config!")
-                }
-            }
-        }
-
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
         _ if cmd.starts_with("script ") => funcs::run_rusterminal_script(&cmd[7..]),
 
-        _ => println!("Command not recognized: {cmd}")
+        _ => println!("Command not recognized: {cmd}"),
     }
 }
 
