@@ -173,3 +173,9 @@
 - Quality of life changes
 - Removed some unused dependencies
 - "Update" command now updates Rustup
+
+# v0.3.4
+- Code optimizations
+- Removed "disableUpdateCMD" settings: No use
+- Made settings.conf look nicer
+- OpenSuse/Zypper package manager support
