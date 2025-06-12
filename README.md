@@ -3,7 +3,7 @@
 ## Current builds:
 
 - Latest release: **(v0.3.3)**
-- Latest beta: **(v0.3.4-beta1)**
+- Latest beta: **(v0.3.4-beta2)**
 
 # Tested on:
 
@@ -12,6 +12,7 @@
 - Linux Mint
 - Fedora
 - Raspberry PI OS
+- OpenSuse Tumbleweed
 
 # For **Linux** machines only.
 ## Supported distros:
