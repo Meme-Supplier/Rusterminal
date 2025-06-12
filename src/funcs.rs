@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4-beta1";
+pub const VERSION: &str = "v0.3.4-beta2";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -233,7 +233,8 @@ pub fn update() {
         run_shell_command("sudo apt update && sudo apt upgrade") // Debian/Ubuntu
     } else if package_manager == "dnf" {
         run_shell_command("sudo dnf update") // Fedora
-    } else if package_manager == "zypper" { // OpenSuse
+    } else if package_manager == "zypper" {
+        // OpenSuse
         run_shell_command("sudo zypper refresh");
         run_shell_command("sudo zypper update")
     } else {
@@ -341,30 +342,28 @@ pub fn run_shell_command(cmd: &str) {
 }
 
 pub fn detect_package_manager() -> String {
-    match load_configs()
+    if let Some(val) = load_configs()
         .get("forceDisablePackageManagerCheck")
         .map(String::as_str)
     {
-        Some("false") => {
-            if Command::new("pacman").output().is_ok() {
-                "pacman".to_string()
-            } else if Command::new("dnf").output().is_ok() {
-                "dnf".to_string()
-            } else if Command::new("apt").output().is_ok() {
-                "apt".to_string()
-            } else if Command::new("zypper").output().is_ok() {
-                "zypper".to_string()
-            } else {
-                "none".to_string()
+        if val == "false" {
+            /* Supported package managers are listed here */
+            for pm in ["pacman", "dnf", "apt", "zypper"] {
+                if Command::new(pm).output().is_ok() {
+                    return pm.to_string();
+                }
             }
         }
-        Some(_) => "none".to_string(),
-        None => {
-            log("funcs::detect_package_manager(): Setting \"forceDisablePackageManagerCheck\" not found in config!");
-            println!("Setting \"forceDisablePackageManagerCheck\" not found in config!\nTry reloading Rusterminal!");
-            "none".to_string()
-        }
+
+        log("funcs::detect_package_manager(): No package manager has been detected!");
+
+        return "none".to_string();
     }
+
+    log("funcs::detect_package_manager(): Missing \"forceDisablePackageManagerCheck\" in config!");
+    println!("Missing \"forceDisablePackageManagerCheck\" in config!\nTry reloading Rusterminal!");
+
+    "none".to_string()
 }
 
 pub fn get_python_version() -> String {
