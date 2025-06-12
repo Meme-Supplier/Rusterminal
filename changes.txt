@@ -179,3 +179,6 @@
 - Removed "disableUpdateCMD" settings: No use
 - Made settings.conf look nicer
 - OpenSuse/Zypper package manager support
+- Bug fixes
+- Default shell prompt is now in the format: hostname@user$~:
+- If you are using an unsupported package manager, Rusterminal will no longer kick you out.
