@@ -204,6 +204,7 @@ fn rusterminal(cmd: &str) {
                 .map(|s| s.as_str())
                 .unwrap_or_default()[1..]
                 .len()];
+
             let build_command: &str = &CONFIGS
                 .get("rusterminalBuildCommand")
                 .map(|s| s.as_str())
@@ -251,7 +252,8 @@ fn get_prompt() -> String {
                 let hostname = get()
                     .map(|h| h.to_string_lossy().into_owned())
                     .unwrap_or_else(|_| "unknown".to_string());
-                format!("{0}@{0}$~: ", hostname)
+                let username = &env::var("USER").expect("Failed to get USER");
+                format!("{hostname}@{username}$~: ")
             }
             Some(_) => "rusterminal$~: ".to_string(),
             None => {
@@ -322,26 +324,14 @@ fn check_compatability() {
         }
     }
 
-    match CONFIGS
-        .get("forceDisablePackageManagerCheck")
-        .map(String::as_str)
+    if funcs::detect_package_manager() == "apt"
+        || funcs::detect_package_manager() == "dnf"
+        || funcs::detect_package_manager() == "pacman"
+        || funcs::detect_package_manager() == "zypper"
     {
-        Some("false") => {
-            if funcs::detect_package_manager() == "apt"
-                || funcs::detect_package_manager() == "dnf"
-                || funcs::detect_package_manager() == "pacman"
-            {
-            } else {
-                println!("You're using an unsupported package manager! Rusterminal will now exit.");
-                logger::log("main::check_compatability(): User is using an unsupported package manager. Exiting...");
-                exit(0)
-            }
-        }
-        Some(_) => {}
-        None => {
-            println!("Setting \"forceDisablePackageManagerCheck\" not found in config!\nTry reloading Rusterminal!");
-            logger::log("main::check_compatibility(): Setting \"forceDisablePackageManagerCheck\" not found in config!")
-        }
+    } else {
+        println!("You're using an unsupported package manager! Expect errors and incompatability!");
+        logger::log("main::check_compatability(): User is using an unsupported package manager. Errors and incompatability are imminent.");
     }
 }
 
