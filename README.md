@@ -12,7 +12,7 @@
 - Linux Mint
 - Fedora
 - Raspberry PI OS
-- OpenSuse Tumbleweed
+- openSUSE Tumbleweed
 
 # For **Linux** machines only.
 ## Supported distros:
@@ -20,7 +20,7 @@
 - **Fedora**-based
 - **Arch**-based
 
-**OpenSuse support coming soon!**
+**openSUSE support coming soon!**
 
 ## And if you have one of the package managers listed:
 - Apt
