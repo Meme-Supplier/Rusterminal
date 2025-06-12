@@ -12,6 +12,7 @@
 - Linux Mint
 - Fedora
 - Raspberry PI OS
+- OpenSuse Tumbleweed
 
 # For **Linux** machines only.
 ## Supported distros:
