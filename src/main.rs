@@ -162,6 +162,7 @@ fn rusterminal(cmd: &str) {
             print!("Pick a channel to update to:\n\n1] beta (Newest features, may not be stable)\n2] main (Latest stable version)\n\nType \"exit\" to exit.\n\nChoice: ");
 
             let mut input = String::new();
+
             io::stdout().flush().expect("Failed to flush");
             io::stdin()
                 .read_line(&mut input)
@@ -344,7 +345,7 @@ fn init() {
 
     match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
-        Some(_) => print!("\n"),
+        Some(_) => println!(),
         None => {
             println!(
                 "Setting \"clearScreenOnStartup\" not found in config!\nTry reloading Rusterminal!"
