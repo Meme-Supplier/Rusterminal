@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4-beta2";
+pub const VERSION: &str = "v0.3.4-beta3";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -225,8 +225,6 @@ pub fn update() {
     log("funcs::update(): Updating Rust...");
     run_shell_command("rustup update");
 
-    print!("\n");
-
     log("funcs::update(): Updating system packages...");
 
     if package_manager == "apt" {
@@ -277,7 +275,38 @@ pub fn update() {
         }
     }
 
+    match load_configs()
+        .get("enableCustomUpdateCommand")
+        .map(String::as_str)
+    {
+        Some("true") => run_custom_update_command(),
+        Some(_) => {}
+        None => {
+            println!("Setting \"enableCustomUpdateCommand\" not found in config!\nTry reloading Rusterminal!");
+            log("funcs::update(): Setting \"enableCustomUpdateCommand\" not found in config!")
+        }
+    }
+
     log("funcs::update(): Updated system.")
+}
+
+fn run_custom_update_command() {
+    let config = load_configs();
+
+    let path = &config
+        .get("customUpdateCommand")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..config
+        .get("customUpdateCommand")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    log(&format!(
+        "funcs::run_custom_update_command(): Running custom update command: \"{path}\""
+    ));
+
+    run_shell_command(path);
 }
 
 pub fn web(url: &str) {
@@ -307,6 +336,17 @@ pub fn ver() {
 }
 
 pub fn run_shell_command(cmd: &str) {
+    let config = load_configs();
+
+    let shell = &config
+        .get("shellToRunShellCommands")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..config
+        .get("shellToRunShellCommands")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
     if cmd.trim().is_empty() {
         log("funcs::run_shell_command(): Empty command received, skipping.");
         return;
@@ -316,7 +356,7 @@ pub fn run_shell_command(cmd: &str) {
         "funcs::run_shell_command(): Running shell command: {cmd}"
     ));
 
-    match Command::new("sh")
+    match Command::new(shell)
         .arg("-c")
         .arg(cmd)
         .stdin(Stdio::inherit())
