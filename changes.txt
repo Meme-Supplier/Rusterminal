@@ -182,3 +182,5 @@
 - Bug fixes
 - Default shell prompt is now in the format: hostname@user$~:
 - If you are using an unsupported package manager, Rusterminal will no longer kick you out.
+- You can now use custom commands to update your system with the "customUpdateCommand" and "enableCustomUpdateCommand" configs.
+- New "shellToRunShellCommands" config
