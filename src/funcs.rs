@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4-beta3";
+pub const VERSION: &str = "v0.3.4-beta4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -49,12 +49,16 @@ pub fn run_rusterminal_script(path: &str) {
                 process_input(&line)
             } else {
                 eprintln!("Failed to read a line in {path}");
-                log(&format!("funcs::run_rusterminal_script(): Failed to read a line in Rusterminal script: {path}"))
+                log(&format!(
+                    "funcs::run_rusterminal_script(): Failed to read a line in Rusterminal script: {path}"
+                ))
             }
         }
     } else {
         eprintln!("Failed to open script file: {path}");
-        log(&format!("funcs::run_rusterminal_script(): Failed to open script file in Rusterminal script: {path}"))
+        log(&format!(
+            "funcs::run_rusterminal_script(): Failed to open script file in Rusterminal script: {path}"
+        ))
     }
 }
 
@@ -74,7 +78,7 @@ pub fn exit_rusterminal() {
             exit(0)
         }
         None => {
-            println!(
+            eprintln!(
                 "Setting \"cleanCompileOnStartup\" not found in config!\nTry reloading Rusterminal!"
             );
             log("funcs::exit_rusterminal(): Setting \"cleanCompileOnStartup\" not found in config!")
@@ -94,12 +98,13 @@ pub fn run_python(script: &str) {
 }
 
 pub fn fmtdsk() {
+
     log("funcs::fmtdsk(): Running disk formatter script.");
 
     let home_dir = &env::var("HOME").expect("Failed to get HOME directory");
     run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 
-    log("funcs::fmtdsk(): Disk formatting successful.")
+    log("funcs::fmtdsk(): Disk formatting successful.");
 }
 
 pub fn rename(files: &str) {
@@ -121,7 +126,7 @@ pub fn input(str: &str) {
         .read_line(&mut input)
         .expect("Failed to read line");
 
-    print!("{input}")
+    print!("{input}");
 }
 
 pub fn clean() {
@@ -151,7 +156,9 @@ pub fn clean() {
             }
             Some(_) => {}
             None => {
-                println!("Setting \"considerYayAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                eprintln!(
+                    "Setting \"considerYayAsAPackageManager\" not found in config!\nTry reloading Rusterminal!"
+                );
                 log("funcs::clean(): Setting \"considerYayAsAPackageManager\" not found in config!")
             }
         }
@@ -166,8 +173,12 @@ pub fn clean() {
             }
             Some(_) => {}
             None => {
-                println!("Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
-                log("funcs::clean(): Setting \"considerParuAsAPackageManager\" not found in config!")
+                eprintln!(
+                    "Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!"
+                );
+                log(
+                    "funcs::clean(): Setting \"considerParuAsAPackageManager\" not found in config!",
+                )
             }
         }
     }
@@ -245,7 +256,9 @@ pub fn update() {
             Some("true") => run_shell_command("yay -Syyu"),
             Some(_) => {}
             None => {
-                println!("Setting \"considerYayAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
+                eprintln!(
+                    "Setting \"considerYayAsAPackageManager\" not found in config!\nTry reloading Rusterminal!"
+                );
                 log("Setting \"considerYayAsAPackageManager\" not found in config!")
             }
         }
@@ -257,8 +270,12 @@ pub fn update() {
             Some("true") => run_shell_command("paru -Syyu"),
             Some(_) => {}
             None => {
-                println!("Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
-                log("funcs::update(): Setting \"considerParuAsAPackageManager\" not found in config!")
+                eprintln!(
+                    "Setting \"considerParuAsAPackageManager\" not found in config!\nTry reloading Rusterminal!"
+                );
+                log(
+                    "funcs::update(): Setting \"considerParuAsAPackageManager\" not found in config!",
+                )
             }
         }
 
@@ -269,8 +286,12 @@ pub fn update() {
             Some("true") => run_shell_command("flatpak update"),
             Some(_) => {}
             None => {
-                println!("Setting \"considerFlatpakAsAPackageManager\" not found in config!\nTry reloading Rusterminal!");
-                log("funcs::update(): Setting \"considerFlatpakAsAPackageManager\" not found in config!")
+                eprintln!(
+                    "Setting \"considerFlatpakAsAPackageManager\" not found in config!\nTry reloading Rusterminal!"
+                );
+                log(
+                    "funcs::update(): Setting \"considerFlatpakAsAPackageManager\" not found in config!",
+                )
             }
         }
     }
@@ -282,7 +303,9 @@ pub fn update() {
         Some("true") => run_custom_update_command(),
         Some(_) => {}
         None => {
-            println!("Setting \"enableCustomUpdateCommand\" not found in config!\nTry reloading Rusterminal!");
+            println!(
+                "Setting \"enableCustomUpdateCommand\" not found in config!\nTry reloading Rusterminal!"
+            );
             log("funcs::update(): Setting \"enableCustomUpdateCommand\" not found in config!")
         }
     }
@@ -401,7 +424,7 @@ pub fn detect_package_manager() -> String {
     }
 
     log("funcs::detect_package_manager(): Missing \"forceDisablePackageManagerCheck\" in config!");
-    println!("Missing \"forceDisablePackageManagerCheck\" in config!\nTry reloading Rusterminal!");
+    eprintln!("Missing \"forceDisablePackageManagerCheck\" in config!\nTry reloading Rusterminal!");
 
     "none".to_string()
 }
