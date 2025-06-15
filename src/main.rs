@@ -73,9 +73,9 @@ fn process_input(input: &str) {
                     .map(String::as_str)
                 {
                     Some("true") => funcs::run_shell_command(command),
-                    Some(_) => println!("{command}: Command not found"),
+                    Some(_) => eprintln!("{command}: Command not found"),
                     None => {
-                        println!("Setting \"treatRusterminalLikeARealShell\" not found in config!\nTry reloading Rusterminal!");
+                        eprintln!("Setting \"treatRusterminalLikeARealShell\" not found in config!\nTry reloading Rusterminal!");
                         logger::log("main::process_input(): Setting \"treatRusterminalLikeARealShell\" not found in config!")
                     }
                 }
@@ -89,9 +89,11 @@ fn rusterminal(cmd: &str) {
         "main::rusterminal(): Executing command in subcommand \"rusterminal()\": \"{cmd}\""
     ));
 
-    let lines: [&str; 20] = [
+    let lines: [&str; 22] = [
         "",
         "Available Commands:",
+        "",
+        "rusterminal <subcommand>",
         "",
         "  build",
         "  clean",
@@ -182,9 +184,9 @@ fn rusterminal(cmd: &str) {
                 print!("\n");
 
                 if input.trim() != "exit" {
-                    println!("Invalid option! Please pick between \"beta\" and \"main\".")
+                    eprintln!("Invalid option! Please pick between \"beta\" and \"main\".")
                 } else {
-                    println!("Operation canceled.")
+                    eprintln!("Operation canceled.")
                 }
             }
         }
@@ -258,7 +260,7 @@ fn get_prompt() -> String {
             }
             Some(_) => "rusterminal$~: ".to_string(),
             None => {
-                println!("Setting \"useHostnameInPrompt\" not found in config!\nTry reloading Rusterminal!");
+                eprintln!("Setting \"useHostnameInPrompt\" not found in config!\nTry reloading Rusterminal!");
                 logger::log("\"Setting 'useHostnameInPrompt\" not found in config!");
                 "rusterminal$~: ".to_string()
             }
@@ -276,7 +278,7 @@ fn get_prompt() -> String {
             .unwrap_or_else(|| "rusterminal$~: ".to_string()),
         Some(_) => "rusterminal$~: ".to_string(),
         None => {
-            println!("Setting \"promptType\" not found in config!\nTry reloading Rusterminal!");
+            eprintln!("Setting \"promptType\" not found in config!\nTry reloading Rusterminal!");
             logger::log("Setting \"promptType\" not found in config!");
             "rusterminal$~: ".to_string()
         }
@@ -306,7 +308,7 @@ fn check_compatability() {
     {
         Some("false") => {
             if env::consts::OS != "linux" {
-                println!("Rusterminal is designed for Linux only!\nExiting...");
+                eprintln!("Rusterminal is designed for Linux only!\nExiting...");
                 logger::log(
                     "main::check_compatability(): System isn't Linux, quitting Rusterminal.",
                 );
@@ -320,7 +322,7 @@ fn check_compatability() {
             }
         }
         None => {
-            println!("Setting \"forceUniversalOScompatability\" not found in config!\nTry reloading Rusterminal!");
+            eprintln!("Setting \"forceUniversalOScompatability\" not found in config!\nTry reloading Rusterminal!");
             logger::log("main::check_compatability(): Setting \"forceUniversalOScompatability\" not found in config!")
         }
     }
@@ -347,7 +349,7 @@ fn init() {
         Some("true") => funcs::run_shell_command("clear"),
         Some(_) => println!(),
         None => {
-            println!(
+            eprintln!(
                 "Setting \"clearScreenOnStartup\" not found in config!\nTry reloading Rusterminal!"
             );
             logger::log("main::init(): Setting \"clearScreenOnStartup\" not found in config!")
@@ -358,7 +360,7 @@ fn init() {
         Some("true") => funcs::help(),
         Some(_) => {}
         None => {
-            println!(
+            eprintln!(
                 "Setting \"helpFuncOnStartup\" not found in config!\nTry reloading Rusterminal!"
             );
             logger::log("main::init(): Setting \"helpFuncOnStartup\" not found in config!")
@@ -373,7 +375,6 @@ fn main() {
     ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
-    logger::log("main::main(): Loaded configurations");
     let prompt: String = get_prompt();
 
     init();
@@ -390,7 +391,7 @@ fn main() {
                 }
             }
             Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
-                eprintln!("Exiting...");
+                eprintln!("Force-exiting Rusterminal...");
                 break;
             }
             Err(err) => {
