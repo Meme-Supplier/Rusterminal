@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4-beta4";
+pub const VERSION: &str = "v0.3.4-beta5";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -69,7 +69,7 @@ pub fn exit_rusterminal() {
     {
         Some("true") => {
             log("funcs::exit_rusterminal(): Cleaning up Rusterminal before closing...");
-            run_shell_command("rm -rf $HOME/rusterminal/target");
+            run_shell_command("cd $HOME/rusterminal; cargo clean");
             exit(0)
         }
         Some(_) => {
@@ -98,7 +98,6 @@ pub fn run_python(script: &str) {
 }
 
 pub fn fmtdsk() {
-
     log("funcs::fmtdsk(): Running disk formatter script.");
 
     let home_dir = &env::var("HOME").expect("Failed to get HOME directory");
@@ -183,6 +182,9 @@ pub fn clean() {
         }
     }
 
+    log("funcs::clean(): Cleaning up Rust(erminal)...");
+    run_shell_command("cd ~/rusterminal; cargo clean");
+
     log("funcs::clean(): Cleaning up system cache...");
     run_shell_command("sudo rm -rf ~/.cache || exit 1")
 }
@@ -239,15 +241,14 @@ pub fn update() {
     log("funcs::update(): Updating system packages...");
 
     if package_manager == "apt" {
-        run_shell_command("sudo apt update && sudo apt upgrade") // Debian/Ubuntu
+        run_shell_command("sudo apt update && sudo apt upgrade")
     } else if package_manager == "dnf" {
-        run_shell_command("sudo dnf update") // Fedora
+        run_shell_command("sudo dnf update")
     } else if package_manager == "zypper" {
-        // OpenSuse
         run_shell_command("sudo zypper refresh");
         run_shell_command("sudo zypper update")
     } else {
-        run_shell_command("sudo pacman -Syyu"); // Arch
+        run_shell_command("sudo pacman -Syyu");
 
         match load_configs()
             .get("considerYayAsAPackageManager")
