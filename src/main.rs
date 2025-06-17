@@ -136,7 +136,7 @@ fn rusterminal(cmd: &str) {
             logger::log("main::rusterminal(): Resetting Rusterminal to it's default settings...");
             println!("Resetting Rusterminal to it's default settings...");
 
-            funcs::run_shell_command("cd ~/.config/rusterminal/ && rm -f settings.conf && mv defaults.conf settings.conf && cp settings.conf settings2.conf && mv settings2.conf defaults.conf");
+            funcs::run_shell_command("cd ~/.config/rusterminal/; rm -f settings.conf; mv defaults.conf settings.conf; cp settings.conf settings2.conf; mv settings2.conf defaults.conf");
 
             logger::log("main::rusterminal(): Rusterminal has been reset to its defaults.");
             println!("\nRusterminal has been reset to its defaults.\nPlease relaunch Rusterminal for changes to take effect.");
@@ -224,8 +224,10 @@ fn rusterminal(cmd: &str) {
 
         "settings" => {
             logger::log("main::rusterminal(): Changing settings...");
+
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
             logger::log("main::rusterminal(): Changed settings successfully.");
+
             match CONFIGS
                 .get("showReminderToSaveSettings")
                 .map(String::as_str)
@@ -233,7 +235,7 @@ fn rusterminal(cmd: &str) {
                 Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
                 Some(_) => {}
                 None => {
-                    println!("Setting \"showReminderToSaveSetting\" not found in config!\nTry reloading Rusterminal!");
+                    eprintln!("Setting \"showReminderToSaveSetting\" not found in config!\nTry reloading Rusterminal!");
                     logger::log("main::rusterminal(): Setting \"showReminderToSaveSettings\" not found in config!")
                 }
             }
@@ -307,7 +309,7 @@ fn check_compatability() {
         .map(String::as_str)
     {
         Some("false") => {
-            if env::consts::OS != "linux" {
+            if os != "linux" {
                 eprintln!("Rusterminal is designed for Linux only!\nExiting...");
                 logger::log(
                     "main::check_compatability(): System isn't Linux, quitting Rusterminal.",
@@ -316,7 +318,7 @@ fn check_compatability() {
             }
         }
         Some(_) => {
-            if env::consts::OS != "linux" {
+            if os != "linux" {
                 println!("Since you're OS isn't Linux, expect tons of errors and instability.");
                 logger::log("main::check_compatability(): Running Rusterminal with tons on errors and instability...")
             }
@@ -327,10 +329,10 @@ fn check_compatability() {
         }
     }
 
-    if funcs::detect_package_manager() == "apt"
-        || funcs::detect_package_manager() == "dnf"
-        || funcs::detect_package_manager() == "pacman"
-        || funcs::detect_package_manager() == "zypper"
+    if package_manager == "apt"
+        || package_manager == "dnf"
+        || package_manager == "pacman"
+        || package_manager == "zypper"
     {
     } else {
         println!("You're using an unsupported package manager! Expect errors and incompatability!");
@@ -375,12 +377,11 @@ fn main() {
     ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
-    let prompt: String = get_prompt();
 
     init();
 
     loop {
-        match rl.readline(&prompt) {
+        match rl.readline(&get_prompt()) {
             Ok(line) => {
                 let input = line.trim();
                 if !input.is_empty() {
