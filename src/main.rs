@@ -52,7 +52,7 @@ fn process_input(input: &str) {
             "rusterminal" => rusterminal("help"),
             "rename" => println!("Usage: rename <files>"),
 
-            _ if command.starts_with("echo ") => funcs::echo(&command[5..]),
+            _ if command.starts_with("echo ") => println!("{}", &command[5..]),
             _ if command.starts_with("run ") => funcs::run_shell_command(&command[4..]),
             _ if command.starts_with("web ") => funcs::web(&command[4..]),
             _ if command.starts_with("expr ") => funcs::run_shell_command(command),
@@ -192,7 +192,7 @@ fn rusterminal(cmd: &str) {
         }
 
         "uninstall" => {
-            logger::log("main::rusterminal(): Uninstalling Rusterminal...()");
+            logger::log("main::rusterminal(): Uninstalling Rusterminal...");
             funcs::run_shell_command("cd ~/rusterminal/installer/ && bash uninstall.sh");
             logger::log("main::rusterminal(): Uninstall successful.");
             exit(0)
@@ -227,18 +227,6 @@ fn rusterminal(cmd: &str) {
 
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
             logger::log("main::rusterminal(): Changed settings successfully.");
-
-            match CONFIGS
-                .get("showReminderToSaveSettings")
-                .map(String::as_str)
-            {
-                Some("true") => println!("\nRestart Rusterminal for changes to take affect.\n"),
-                Some(_) => {}
-                None => {
-                    eprintln!("Setting \"showReminderToSaveSetting\" not found in config!\nTry reloading Rusterminal!");
-                    logger::log("main::rusterminal(): Setting \"showReminderToSaveSettings\" not found in config!")
-                }
-            }
         }
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
