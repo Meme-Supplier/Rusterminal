@@ -184,3 +184,5 @@
 - If you are using an unsupported package manager, Rusterminal will no longer kick you out.
 - You can now use custom commands to update your system with the "customUpdateCommand" and "enableCustomUpdateCommand" configs.
 - New "shellToRunShellCommands" config
+- The "(rusterminal) clean" command now cleans up your Rusterminal installation.
+- Removed config "showReminderToSaveSettings": No use
