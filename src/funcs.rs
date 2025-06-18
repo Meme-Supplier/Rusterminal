@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4-beta5";
+pub const VERSION: &str = "v0.3.4-rc1";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -107,6 +107,7 @@ pub fn fmtdsk() {
 }
 
 pub fn rename(files: &str) {
+    log(&format!("funcs::rename(): Renaming... {files}"));
     run_shell_command(&format!("mv {files}"));
 }
 
@@ -187,11 +188,6 @@ pub fn clean() {
 
     log("funcs::clean(): Cleaning up system cache...");
     run_shell_command("sudo rm -rf ~/.cache || exit 1")
-}
-
-pub fn echo(text: &str) {
-    log(&format!("funcs::echo(): Running echoing text: {text}"));
-    run_shell_command(&format!("echo -e {text}"))
 }
 
 pub fn copy(path: &str) {
