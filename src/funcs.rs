@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4-rc1";
+pub const VERSION: &str = "v0.3.4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -143,16 +143,14 @@ pub fn clean() {
         run_shell_command("sudo zypper clean --all -y");
         run_shell_command("sudo rm -rf /var/cache/zypp/packages/* || exit");
     } else {
-        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm");
-        run_shell_command("sudo pacman -S -cc --noconfirm");
+        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm; sudo pacman -S -cc --noconfirm");
 
         match load_configs()
             .get("considerYayAsAPackageManager")
             .map(String::as_str)
         {
             Some("true") => {
-                run_shell_command("yay -Rns $(yay -Qdtq) --noconfirm");
-                run_shell_command("yay -S -cc --noconfirm")
+                run_shell_command("yay -Rns $(yay -Qdtq) --noconfirm; yay -S -cc --noconfirm");
             }
             Some(_) => {}
             None => {
@@ -187,7 +185,7 @@ pub fn clean() {
     run_shell_command("cd ~/rusterminal; cargo clean");
 
     log("funcs::clean(): Cleaning up system cache...");
-    run_shell_command("sudo rm -rf ~/.cache || exit 1")
+    run_shell_command("sudo rm -rf ~/.cache || exit 0")
 }
 
 pub fn copy(path: &str) {
@@ -230,23 +228,24 @@ pub fn wait(time: &str) {
 
 pub fn update() {
     let package_manager = detect_package_manager();
+    let config = load_configs();
 
     log("funcs::update(): Updating Rust...");
-    run_shell_command("rustup update");
+    run_shell_command("rustup update"); // Update Rust
+    run_shell_command("cd ~/rusterminal; cargo update"); // Update Rusterminal's dependencies
 
     log("funcs::update(): Updating system packages...");
 
     if package_manager == "apt" {
-        run_shell_command("sudo apt update && sudo apt upgrade")
+        run_shell_command("sudo apt update; sudo apt upgrade")
     } else if package_manager == "dnf" {
         run_shell_command("sudo dnf update")
     } else if package_manager == "zypper" {
-        run_shell_command("sudo zypper refresh");
-        run_shell_command("sudo zypper update")
+        run_shell_command("sudo zypper refresh; sudo zypper update");
     } else {
         run_shell_command("sudo pacman -Syyu");
 
-        match load_configs()
+        match config
             .get("considerYayAsAPackageManager")
             .map(String::as_str)
         {
@@ -260,7 +259,7 @@ pub fn update() {
             }
         }
 
-        match load_configs()
+        match config
             .get("considerParuAsAPackageManager")
             .map(String::as_str)
         {
@@ -276,7 +275,7 @@ pub fn update() {
             }
         }
 
-        match load_configs()
+        match config
             .get("considerFlatpakAsAPackageManager")
             .map(String::as_str)
         {
@@ -293,11 +292,26 @@ pub fn update() {
         }
     }
 
-    match load_configs()
+    match config
         .get("enableCustomUpdateCommand")
         .map(String::as_str)
     {
-        Some("true") => run_custom_update_command(),
+        Some("true") => {
+            let path = &config
+                .get("customUpdateCommand")
+                .map(|s| s.as_str())
+                .unwrap_or_default()[1..config
+                .get("customUpdateCommand")
+                .map(|s| s.as_str())
+                .unwrap_or_default()[1..]
+                .len()];
+
+            log(&format!(
+                "funcs::run_custom_update_command(): Running custom update command: \"{path}\""
+            ));
+
+            run_shell_command(path);
+        }
         Some(_) => {}
         None => {
             println!(
@@ -310,32 +324,9 @@ pub fn update() {
     log("funcs::update(): Updated system.")
 }
 
-fn run_custom_update_command() {
-    let config = load_configs();
-
-    let path = &config
-        .get("customUpdateCommand")
-        .map(|s| s.as_str())
-        .unwrap_or_default()[1..config
-        .get("customUpdateCommand")
-        .map(|s| s.as_str())
-        .unwrap_or_default()[1..]
-        .len()];
-
-    log(&format!(
-        "funcs::run_custom_update_command(): Running custom update command: \"{path}\""
-    ));
-
-    run_shell_command(path);
-}
-
 pub fn web(url: &str) {
     log(&format!("funcs::web(): Opening webpage: {url}"));
-
-    Command::new("xdg-open")
-        .arg(url)
-        .spawn()
-        .expect("Failed to open webpage");
+    run_shell_command(&format!("xdg-open {url}"));
 }
 
 pub fn ver() {
