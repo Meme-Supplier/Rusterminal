@@ -4,8 +4,6 @@
 # memesupplierbusiness@gmail.com
 # Maintained by Meme Supplier
 
-echo
-
 detect_package_manager() {
     if command -v pacman &>/dev/null; then
         echo "pacman"
@@ -13,6 +11,8 @@ detect_package_manager() {
         echo "apt"
     elif command -v dnf &>/dev/null; then
         echo "dnf"
+    elif command -v zypper &>/dev/null; then
+        echo "zypper"
     else
         echo "Unsupported package manager"
         return 1
@@ -26,7 +26,7 @@ if [[ "$PM" == "Unsupported package manager" ]]; then
     exit 1
 fi
 
-echo -e "Do you want to install Rusterminal?\n(Y or N)"
+echo -e "\nDo you want to install Rusterminal?\n(Y or N)"
 read -r answer
 
 case "$answer" in
@@ -59,6 +59,12 @@ elif [[ "$PM" == "apt" ]]; then
 elif [[ "$PM" == "dnf" ]]; then
     sudo dnf update -y
     sudo dnf install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano bash parted gcc
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+elif [[ "$PM" == "zypper" ]]; then
+    sudo zypper refresh
+    sudo zypper update -y
+    sudo zypper install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano bash parted
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source "$HOME/.cargo/env"
 else
