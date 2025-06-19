@@ -157,7 +157,6 @@ fn rusterminal(cmd: &str) {
             logger::log("main::rusterminal(): Opening logs");
             funcs::run_shell_command("nano ~/rusterminal/log.txt");
             logger::log("main::rusterminal(): Logs closed");
-            funcs::run_shell_command("clear")
         }
 
         "upgrade" => {
@@ -181,12 +180,10 @@ fn rusterminal(cmd: &str) {
                 logger::log("main::rusterminal(): Update successful.");
                 exit(0)
             } else {
-                print!("\n");
-
                 if input.trim() != "exit" {
-                    eprintln!("Invalid option! Please pick between \"beta\" and \"main\".")
+                    eprintln!("\nInvalid option! Please pick between \"beta\" and \"main\".")
                 } else {
-                    eprintln!("Operation canceled.")
+                    eprintln!("\nOperation canceled.")
                 }
             }
         }
