@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4";
+pub const VERSION: &str = "v0.3.5-beta1";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -90,11 +90,7 @@ pub fn run_python(script: &str) {
     log(&format!(
         "funcs::run_python(): Running Python script: {script}"
     ));
-
-    let _ = Command::new("python3")
-        .arg(script)
-        .status()
-        .expect("Failed to execute Python script");
+    run_shell_command(&format!("python3 {script}"));
 }
 
 pub fn fmtdsk() {
@@ -143,7 +139,9 @@ pub fn clean() {
         run_shell_command("sudo zypper clean --all -y");
         run_shell_command("sudo rm -rf /var/cache/zypp/packages/* || exit");
     } else {
-        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm; sudo pacman -S -cc --noconfirm");
+        run_shell_command(
+            "sudo pacman -Rns $(pacman -Qdtq) --noconfirm; sudo pacman -S -cc --noconfirm",
+        );
 
         match load_configs()
             .get("considerYayAsAPackageManager")
@@ -166,8 +164,7 @@ pub fn clean() {
             .map(String::as_str)
         {
             Some("true") => {
-                run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm");
-                run_shell_command("paru -S -cc --noconfirm")
+                run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm; paru -S -cc --noconfirm");
             }
             Some(_) => {}
             None => {
@@ -292,10 +289,7 @@ pub fn update() {
         }
     }
 
-    match config
-        .get("enableCustomUpdateCommand")
-        .map(String::as_str)
-    {
+    match config.get("enableCustomUpdateCommand").map(String::as_str) {
         Some("true") => {
             let path = &config
                 .get("customUpdateCommand")
