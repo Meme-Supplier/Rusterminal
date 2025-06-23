@@ -43,6 +43,10 @@ if [ -d ~/.config/rusterminal ]; then
     sudo rm -rf ~/.config/rusterminal
 fi
 
+if [ -d ~/.rusterminal_history ]; then
+    sudo rm -rf ~/.rusterminal_history
+fi
+
 mkdir -p ~/rusterminal
 
 echo -e "\nInstalling dependencies...\n"
@@ -76,7 +80,6 @@ fi
 # Ensure cargo is available
 export PATH="$HOME/.cargo/bin:$PATH"
 
-# Set Rust to stable
 rustup default nightly
 
 if [[ ! -d "$HOME/Rusterminal" ]]; then
