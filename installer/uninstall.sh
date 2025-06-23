@@ -16,6 +16,7 @@ sudo rm -rf ~/rusterminal
 sudo rm -f /usr/local/bin/rusterminal
 
 rm -r ~/.config/rusterminal
+rm -f ~/.rusterminal_history
 
 # Remove from /etc/shells if present
 if grep -qxF "/usr/local/bin/rusterminal" /etc/shells; then
