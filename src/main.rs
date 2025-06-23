@@ -4,6 +4,7 @@ use hostname::get;
 use rustyline::error::ReadlineError;
 use rustyline::{Config, DefaultEditor};
 use std::collections::HashMap;
+use std::fs;
 use std::io::Write;
 use std::process::exit;
 use std::sync::LazyLock;
@@ -243,6 +244,7 @@ fn get_prompt() -> String {
                     .map(|h| h.to_string_lossy().into_owned())
                     .unwrap_or_else(|_| "unknown".to_string());
                 let username = &env::var("USER").expect("Failed to get USER");
+
                 format!("{hostname}@{username}$~: ")
             }
             Some(_) => "rusterminal$~: ".to_string(),
@@ -355,6 +357,14 @@ fn init() {
     }
 }
 
+fn get_rusterminal_history() -> io::Result<Vec<String>> {
+    let home = logger::get_home();
+    let content = fs::read_to_string(format!("{home}/.rusterminal_history"))?;
+    let words = content.lines().map(|s| s.to_string()).collect();
+
+    Ok(words)
+}
+
 fn main() {
     logger::init(&format!(
         "\n===== Start session {} =====\n",
@@ -362,6 +372,12 @@ fn main() {
     ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
+
+    if let Ok(history) = get_rusterminal_history() {
+        for cmd in history {
+            let _ = rl.add_history_entry(cmd);
+        }
+    }
 
     init();
 
@@ -371,7 +387,11 @@ fn main() {
                 let input = line.trim();
                 if !input.is_empty() {
                     if let Some("true") = CONFIGS.get("commandHistoryEnabled").map(String::as_str) {
+                        let home = logger::get_home();
+
                         let _ = rl.add_history_entry(input);
+                        let _ =
+                            logger::write_to_file(input, &format!("{home}/.rusterminal_history"));
                     }
                     process_input(input)
                 }
