@@ -190,3 +190,6 @@
 # v0.3.5
 - Code optimizations
 - Proper command history, now stored in $HOME/.rusterminal_history
+- Subcommand "history" for "rusterminal" command
+- Config "logTimeAndDateFormat"
+- Bug fixes
