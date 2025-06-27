@@ -12,7 +12,7 @@ use crate::logger::{get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.5-beta1";
+pub const VERSION: &str = "v0.3.5-beta2";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -134,10 +134,8 @@ pub fn clean() {
         run_shell_command("sudo dnf autoremove -y")
     } else if detect_package_manager().as_str() == "zypper" {
         run_shell_command(
-            "sudo zypper remove $(zypper packages --orphaned | awk '/^i/ {print $5}') -y",
+            "sudo zypper remove $(zypper packages --orphaned | awk '/^i/ {print $5}') -y; sudo zypper clean --all -y; sudo rm -rf /var/cache/zypp/packages/* || exit",
         );
-        run_shell_command("sudo zypper clean --all -y");
-        run_shell_command("sudo rm -rf /var/cache/zypp/packages/* || exit");
     } else {
         run_shell_command(
             "sudo pacman -Rns $(pacman -Qdtq) --noconfirm; sudo pacman -S -cc --noconfirm",
@@ -369,20 +367,10 @@ pub fn run_shell_command(cmd: &str) {
         .stderr(Stdio::inherit())
         .status()
     {
-        Ok(status) if status.success() => {
-            log("funcs::run_shell_command(): Command executed successfully.");
-        }
-        Ok(status) => {
-            log(&format!(
-                "funcs::run_shell_command(): Command exited with status: {}",
-                status
-            ));
-        }
-        Err(e) => {
-            log(&format!(
-                "funcs::run_shell_command(): Failed to execute command: {e}"
-            ));
-        }
+        Ok(_) => {}
+        Err(e) => log(&format!(
+            "funcs::run_shell_command(): Failed to execute command: {e}"
+        )),
     }
 }
 
