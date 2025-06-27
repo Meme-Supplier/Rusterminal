@@ -10,6 +10,8 @@ use std::process::exit;
 use std::sync::LazyLock;
 use std::{env, io};
 
+use crate::funcs::run_shell_command;
+
 mod cmds;
 mod funcs;
 mod logger;
@@ -132,6 +134,11 @@ fn rusterminal(cmd: &str) {
         "script" => println!("Usage: rusterminal script <script path>"),
         "clean" => funcs::clean(),
         "update" => funcs::update(),
+
+        "history" => {
+            logger::log("main:rusterminal(): Viewing Rusterminal's command history...");
+            run_shell_command("nano ~/.rusterminal_history")
+        }
 
         "reset" => {
             logger::log("main::rusterminal(): Resetting Rusterminal to it's default settings...");
@@ -332,7 +339,7 @@ fn init() {
 
     check_compatability();
 
-    logger::log("main::init(): System is compatible, launching...");
+    logger::log("main::init(): System is compatible, continuing...");
 
     match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
@@ -369,6 +376,11 @@ fn main() {
     logger::init(&format!(
         "\n===== Start session {} =====\n",
         &logger::get_time()
+    ));
+
+    logger::log(&format!(
+        "logger::get_time_format(): Using time/date format: {}",
+        logger::get_time_format()
     ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
