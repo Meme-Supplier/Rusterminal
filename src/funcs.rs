@@ -5,14 +5,15 @@ use rustc_version_runtime::version;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
+use std::path::Path;
 use std::process::{exit, Command, Stdio};
 use std::{env, fs};
 
-use crate::logger::{get_time, init, log};
+use crate::logger::{get_home, get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.5-beta2";
+pub const VERSION: &str = "v0.3.5-beta3";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -60,6 +61,30 @@ pub fn run_rusterminal_script(path: &str) {
             "funcs::run_rusterminal_script(): Failed to open script file in Rusterminal script: {path}"
         ))
     }
+}
+
+pub fn set_current_cwd(dir: &str) -> io::Result<()> {
+    let home = get_home(); // assuming this returns String
+
+    // Expand leading ~ or $HOME
+    let resolved_dir = if dir.starts_with("~/") {
+        format!("{}/{}", home, &dir[2..])
+    } else if dir == "~" || dir == "$HOME" {
+        home
+    } else if dir.starts_with("$HOME/") {
+        format!("{}/{}", home, &dir[6..])
+    } else {
+        dir.to_string()
+    };
+
+    env::set_current_dir(Path::new(&resolved_dir))?;
+
+    log(&format!(
+        "funcs::set_current_cwd(): Changed working directory to: {}",
+        resolved_dir
+    ));
+
+    Ok(())
 }
 
 pub fn exit_rusterminal() {
@@ -222,8 +247,8 @@ pub fn wait(time: &str) {
 }
 
 pub fn update() {
-    let package_manager = detect_package_manager();
-    let config = load_configs();
+    let package_manager = &detect_package_manager();
+    let config = &load_configs();
 
     log("funcs::update(): Updating Rust...");
     run_shell_command("rustup update"); // Update Rust
