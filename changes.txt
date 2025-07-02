@@ -193,3 +193,7 @@
 - Subcommand "history" for "rusterminal" command
 - Config "logTimeAndDateFormat"
 - Bug fixes
+- When uninstalling Rusterminal, it will now ask you if you want to remove the command history and configs.
+- Setting a custom prompt has been overhauled
+- "cd" command
+- "startingDir" config
