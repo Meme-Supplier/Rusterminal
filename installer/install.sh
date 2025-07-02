@@ -103,11 +103,6 @@ mv settings2.conf defaults.conf
 chmod +x ~/rusterminal/launch.sh
 sudo ln -sf ~/rusterminal/launch.sh /usr/local/bin/rusterminal
 
-if ! grep -qxF "/usr/local/bin/rusterminal" /etc/shells; then
-    echo "Registering /usr/local/bin/rusterminal as a login shell..."
-    echo "/usr/local/bin/rusterminal" | sudo tee -a /etc/shells > /dev/null
-fi
-
 sudo rm -rf ~/Rusterminal
 sudo rm -f ~/rusterminal/installer/install.sh
 
