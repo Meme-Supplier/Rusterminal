@@ -1,8 +1,9 @@
 #!/usr/bin/env rust-script
 
 pub fn list() {
-    let lines: [&str; 21] = [
+    let lines: [&str; 22] = [
         "",
+        "cd <path>",
         "clear",
         "copy <path>",
         "del <path>",
@@ -12,7 +13,7 @@ pub fn list() {
         "expr <equation>",
         "fmtdsk",
         "help",
-        "ls <path>",
+        "ls (<path>)",
         "newdir <path>",
         "ping <site>",
         "python / python3",
