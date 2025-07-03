@@ -10,10 +10,10 @@ use std::process::{exit, Command, Stdio};
 use std::{env, fs};
 
 use crate::logger::{get_home, get_time, init, log};
-use crate::process_input;
 use crate::sysinfo::get_system_info;
+use crate::process_input;
 
-pub const VERSION: &str = "v0.3.5-beta3";
+pub const VERSION: &str = "v0.3.5-beta4";
 
 pub fn load_configs() -> HashMap<String, String> {
     let home_dir = env::var("HOME").expect("Failed to get HOME directory");
@@ -66,7 +66,7 @@ pub fn run_rusterminal_script(path: &str) {
 pub fn set_current_cwd(dir: &str) -> io::Result<()> {
     let home = get_home(); // assuming this returns String
 
-    // Expand leading ~ or $HOME
+    // Expand ~ and $HOME
     let resolved_dir = if dir.starts_with("~/") {
         format!("{}/{}", home, &dir[2..])
     } else if dir == "~" || dir == "$HOME" {
@@ -77,12 +77,22 @@ pub fn set_current_cwd(dir: &str) -> io::Result<()> {
         dir.to_string()
     };
 
-    env::set_current_dir(Path::new(&resolved_dir))?;
+    let path = Path::new(&resolved_dir);
 
-    log(&format!(
-        "funcs::set_current_cwd(): Changed working directory to: {}",
-        resolved_dir
-    ));
+    if !path.exists() {
+        eprintln!("Directory \"{resolved_dir}\" doesn't exist");
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("Directory does not exist: {resolved_dir}"),
+        ));
+    }
+
+    if !path.is_dir() {
+        eprintln!("Directory \"{resolved_dir}\" doesn't exist");
+        log(&format!("funcs::set_current_cwd(): Directory \"{resolved_dir}\" doesn't exist."));
+    }
+
+    env::set_current_dir(path)?;
 
     Ok(())
 }
@@ -121,7 +131,7 @@ pub fn run_python(script: &str) {
 pub fn fmtdsk() {
     log("funcs::fmtdsk(): Running disk formatter script.");
 
-    let home_dir = &env::var("HOME").expect("Failed to get HOME directory");
+    let home_dir = get_home();
     run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 
     log("funcs::fmtdsk(): Disk formatting successful.");
