@@ -197,3 +197,4 @@
 - Setting a custom prompt has been overhauled
 - "cd" command
 - "startingDir" config
+- improved "ls" command
