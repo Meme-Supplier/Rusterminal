@@ -9,8 +9,6 @@ use std::process::exit;
 use std::sync::LazyLock;
 use std::{env, io};
 
-use crate::funcs::run_shell_command;
-
 mod cmds;
 mod funcs;
 mod logger;
@@ -37,7 +35,7 @@ fn process_input(input: &str) {
             "restart" | "reboot" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
             "fmtdsk" => funcs::fmtdsk(),
-            "ls" => run_shell_command(&format!("ls {:?}", env::current_dir().unwrap())),
+            "ls" => funcs::run_shell_command(&format!("ls -A {:?}", env::current_dir().unwrap())),
 
             // Commands that require extra usage
             "echo" => println!("Usage: echo <text>"),
@@ -246,21 +244,19 @@ fn rusterminal(cmd: &str) {
 fn get_prompt() -> String {
     logger::log("main::get_prompt(): Setting user prompt...");
 
+    let username = env::var("USER").unwrap_or_else(|_| "unknown".to_string());
+    let hostname = get()
+        .map(|h| h.to_string_lossy().into_owned())
+        .unwrap_or_else(|_| "unknown".to_string());
+    let cwd = env::current_dir()
+        .ok()
+        .and_then(|p| p.to_str().map(String::from))
+        .unwrap_or_else(|| "~".to_string());
+
     let prompt = match CONFIGS.get("promptType").map(String::as_str) {
         Some("default") => match CONFIGS.get("useHostnameInPrompt").map(String::as_str) {
-            Some("true") => {
-                let hostname = get()
-                    .map(|h| h.to_string_lossy().into_owned())
-                    .unwrap_or_else(|_| "unknown".to_string());
-
-                let username = env::var("USER").unwrap_or_else(|_| "unknown".to_string());
-
-                let cwd = env::current_dir().unwrap();
-
-                format!("{hostname}@{username} {} $~: ", cwd.display())
-            }
+            Some("true") => format!("{hostname}@{username} {cwd} $~: "),
             Some(_) => "rusterminal$~: ".to_string(),
-
             None => {
                 eprintln!("Setting \"useHostnameInPrompt\" not found in config!\nTry reloading Rusterminal!");
                 logger::log("Setting \"useHostnameInPrompt\" not found in config!");
@@ -272,22 +268,10 @@ fn get_prompt() -> String {
             .map(|s| {
                 let mut prompt = s.trim().to_string();
 
-                // Remove surrounding quotes if any
                 if prompt.starts_with('"') && prompt.ends_with('"') && prompt.len() >= 2 {
                     prompt = prompt[1..prompt.len() - 1].to_string();
                 }
 
-                // Gather values to replace placeholders
-                let username = env::var("USER").unwrap_or_else(|_| "unknown".to_string());
-                let hostname = get()
-                    .map(|h| h.to_string_lossy().into_owned())
-                    .unwrap_or_else(|_| "unknown".to_string());
-                let cwd = env::current_dir()
-                    .ok()
-                    .and_then(|p| p.to_str().map(String::from))
-                    .unwrap_or_else(|| "~".to_string());
-
-                // Replace Bash-style escape sequences
                 prompt = prompt
                     .replace(r"\[", "")
                     .replace(r"\]", "")
@@ -444,7 +428,7 @@ fn main() {
                 let input = line.trim();
                 if !input.is_empty() {
                     if let Some("true") = CONFIGS.get("commandHistoryEnabled").map(String::as_str) {
-                        let home = logger::get_home();
+                        let home: String = logger::get_home();
 
                         let _ = rl.add_history_entry(input);
                         let _ =
