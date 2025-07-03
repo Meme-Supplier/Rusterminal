@@ -1,9 +1,9 @@
-# Rusterminal - A useless "alternative" to Zsh and Bash
+# Rusterminal - An "alternative" to Zsh and Bash
 
 ## Current builds:
 
 - Latest release: **(v0.3.4)**
-- Latest beta: **(v0.3.5-beta2)**
+- Latest beta: **(v0.3.5-beta4)**
 
 # Tested on:
 
