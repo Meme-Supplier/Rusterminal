@@ -54,7 +54,6 @@ echo -e "\nInstalling dependencies...\n"
 if [[ "$PM" == "pacman" ]]; then
     sudo pacman -Syu --noconfirm
     sudo pacman -S --noconfirm rustup dosfstools ntfs-3g nano bash parted gcc
-    source "$HOME/.cargo/env"
 elif [[ "$PM" == "apt" ]]; then
     sudo apt update -y
     sudo apt upgrade -y
@@ -64,13 +63,11 @@ elif [[ "$PM" == "dnf" ]]; then
     sudo dnf update -y
     sudo dnf install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano bash parted gcc
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
 elif [[ "$PM" == "zypper" ]]; then
     sudo zypper refresh
     sudo zypper update -y
     sudo zypper install -y curl rustup gcc glibc-devel clang llvm make cmake dosfstools ntfs-3g nano bash parted
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source "$HOME/.cargo/env"
 else
     echo "Error: Unsupported package manager."
     read
@@ -78,6 +75,7 @@ else
 fi
 
 # Ensure cargo is available
+source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 
 rustup default nightly
@@ -108,7 +106,14 @@ sudo rm -f ~/rusterminal/installer/install.sh
 
 echo -e "Installed Rusterminal!\n"
 
-echo -e "Do you want to launch Rusterminal?\n(Y or N)"
+echo -e "Do you want to edit Rusterminal's configurations before launching?\n(Y or N)"
+read -r answer
+
+case "$answer" in
+    [Yy]) nano ~/.config/rusterminal/settings.conf ;;
+esac
+
+echo -e "\nDo you want to launch Rusterminal?\n(Y or N)"
 read -r answer
 
 case "$answer" in
