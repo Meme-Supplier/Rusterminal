@@ -15,11 +15,12 @@
 - openSUSE Tumbleweed
 
 # For **Linux** machines only.
-## Supported distros:
-- **Debian**/**Ubuntu**-based
-- **Fedora**-based
-- **Arch**-based
-- **SUSE**-based
+## Supported distro bases:
+- Debian
+- Ubuntu
+- Fedora
+- Arch
+- SUSE
 
 ## And if you have one of the package managers listed:
 - Apt
