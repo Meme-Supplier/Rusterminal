@@ -191,10 +191,11 @@
 - Code optimizations
 - Proper command history, now stored in $HOME/.rusterminal_history
 - Subcommand "history" for "rusterminal" command
-- Config "logTimeAndDateFormat"
+- Configs "displayMemoryUsage" and "logTimeAndDateFormat"
 - Bug fixes
 - When uninstalling Rusterminal, it will now ask you if you want to remove the command history and configs.
 - Setting a custom prompt has been overhauled
 - "cd" command
 - "startingDir" config
 - improved "ls" command
+- The installer will now ask you if you want to edit Rusterminal's configs before first run
