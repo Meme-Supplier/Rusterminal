@@ -5,7 +5,7 @@ use rustyline::{Config, DefaultEditor};
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
-use std::process::exit;
+use std::process::{exit, Command};
 use std::sync::LazyLock;
 use std::{env, io};
 
@@ -14,7 +14,6 @@ mod funcs;
 mod logger;
 mod sysinfo;
 mod xray;
-
 static CONFIGS: LazyLock<HashMap<String, String>> = LazyLock::new(|| funcs::load_configs());
 
 fn process_input(input: &str) {
@@ -255,7 +254,9 @@ fn get_prompt() -> String {
 
     let prompt = match CONFIGS.get("promptType").map(String::as_str) {
         Some("default") => match CONFIGS.get("useHostnameInPrompt").map(String::as_str) {
-            Some("true") => format!("{hostname}@{username} {cwd} $~: "),
+            Some("true") => {
+                format!("{hostname}@{username} {cwd} $~: ")
+            }
             Some(_) => "rusterminal$~: ".to_string(),
             None => {
                 eprintln!("Setting \"useHostnameInPrompt\" not found in config!\nTry reloading Rusterminal!");
@@ -291,7 +292,45 @@ fn get_prompt() -> String {
         }
     };
 
-    prompt
+    match CONFIGS.get("displayMemoryUsage").map(String::as_str) {
+        Some("true") => {
+            let output = Command::new("pgrep")
+                .arg("rusterminal")
+                .output()
+                .expect("failed to execute pgrep");
+
+            let pids_raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+            if pids_raw.is_empty() {
+                eprintln!("No running rusterminal processes found.");
+                
+            }
+
+            // grab just the first PID if multiple are found
+            let pid = pids_raw.lines().next().unwrap();
+
+            let cmd = Command::new("ps")
+                .args(["-p", pid, "-o", "pid,comm,%mem,rss,vsz"])
+                .output()
+                .expect("failed to execute ps");
+
+            let mem_usage = if cmd.stdout.is_empty() {
+                String::from_utf8_lossy(&cmd.stderr).to_string()
+            } else {
+                String::from_utf8_lossy(&cmd.stdout).to_string()
+            };
+
+            format!("{mem_usage}\n{prompt}")
+        }
+        Some(_) => prompt,
+        None => {
+            eprintln!(
+                "Setting \"displayMemoryUsage\" not found in config!\nTry reloading Rusterminal!"
+            );
+            logger::log("main::get_prompt(): Setting \"displayMemoryUsage\" not found in config!");
+            prompt
+        }
+    }
 }
 
 fn check_compatability() {
@@ -428,7 +467,7 @@ fn main() {
                 let input = line.trim();
                 if !input.is_empty() {
                     if let Some("true") = CONFIGS.get("commandHistoryEnabled").map(String::as_str) {
-                        let home: String = logger::get_home();
+                        let home = logger::get_home();
 
                         let _ = rl.add_history_entry(input);
                         let _ =
@@ -437,7 +476,7 @@ fn main() {
                     process_input(input)
                 }
             }
-            Err(_) => (),
+            Err(_) => {}
         }
     }
 }
