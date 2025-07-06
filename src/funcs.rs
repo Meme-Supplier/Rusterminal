@@ -10,13 +10,13 @@ use std::process::{exit, Command, Stdio};
 use std::{env, fs};
 
 use crate::logger::{get_home, get_time, init, log};
-use crate::sysinfo::get_system_info;
 use crate::process_input;
+use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.5-beta4";
+pub const VERSION: &str = "v0.3.5-beta5";
 
 pub fn load_configs() -> HashMap<String, String> {
-    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+    let home_dir: String = env::var("HOME").expect("Failed to get HOME directory");
 
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
@@ -68,11 +68,11 @@ pub fn set_current_cwd(dir: &str) -> io::Result<()> {
 
     // Expand ~ and $HOME
     let resolved_dir = if dir.starts_with("~/") {
-        format!("{}/{}", home, &dir[2..])
+        format!("{home}/{}", &dir[2..])
     } else if dir == "~" || dir == "$HOME" {
         home
     } else if dir.starts_with("$HOME/") {
-        format!("{}/{}", home, &dir[6..])
+        format!("{home}/{}", &dir[6..])
     } else {
         dir.to_string()
     };
@@ -89,7 +89,9 @@ pub fn set_current_cwd(dir: &str) -> io::Result<()> {
 
     if !path.is_dir() {
         eprintln!("Directory \"{resolved_dir}\" doesn't exist");
-        log(&format!("funcs::set_current_cwd(): Directory \"{resolved_dir}\" doesn't exist."));
+        log(&format!(
+            "funcs::set_current_cwd(): Directory \"{resolved_dir}\" doesn't exist."
+        ));
     }
 
     env::set_current_dir(path)?;
@@ -359,7 +361,7 @@ pub fn web(url: &str) {
 pub fn ver() {
     println!("\nRusterminal version: {VERSION}");
     println!("Rust version: {}", rustc_version::version().unwrap());
-    println!("Python version: {}\n", get_python_version());
+    println!("Python version: {}\n", &get_python_version());
 
     let system_info = get_system_info();
 
@@ -457,8 +459,8 @@ pub fn get_python_version() -> String {
 }
 
 pub fn help() {
-    let rust_version = version();
-    let python_version = get_python_version();
+    let rust_version = &version();
+    let python_version = &get_python_version();
 
     println!("Rusterminal {VERSION} (Rustc {rust_version}) (Python {python_version})");
     println!("Type \"rusterminal\" to get started.\n")
