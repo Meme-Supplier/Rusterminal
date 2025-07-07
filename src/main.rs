@@ -1,7 +1,5 @@
 #!/usr/bin/env rust-script
 
-use hostname::get;
-use rustyline::{Config, DefaultEditor};
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
@@ -9,11 +7,15 @@ use std::process::{exit, Command};
 use std::sync::LazyLock;
 use std::{env, io};
 
+use hostname::get;
+use rustyline::{Config, DefaultEditor};
+
 mod cmds;
 mod funcs;
 mod logger;
 mod sysinfo;
 mod xray;
+
 static CONFIGS: LazyLock<HashMap<String, String>> = LazyLock::new(|| funcs::load_configs());
 
 fn process_input(input: &str) {
@@ -303,7 +305,6 @@ fn get_prompt() -> String {
 
             if pids_raw.is_empty() {
                 eprintln!("No running rusterminal processes found.");
-                
             }
 
             // grab just the first PID if multiple are found
@@ -345,7 +346,7 @@ fn check_compatability() {
     logger::log(&format!("main::check_compatability(): OS: {os}"));
     logger::log(&format!(
         "main::check_compatability(): Rusterminal Version: {}",
-        funcs::VERSION
+        *funcs::VERSION
     ));
 
     match CONFIGS
