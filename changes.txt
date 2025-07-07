@@ -199,3 +199,23 @@
 - "startingDir" config
 - improved "ls" command
 - The installer will now ask you if you want to edit Rusterminal's configs before first run
+- Rusterminal's version is now retrieved through the "Cargo.toml" file
+- The "help" command now shows Rust's edition next to Rust's version
+
+# v0.3.6
+    - beta1
+       - 
+    - beta2
+       - 
+    - beta3
+       - 
+    - beta4
+       - 
+    - beta5
+       - 
+    - rc1
+       - 
+    - rc2
+       - 
+    - Final changes
+       -
