@@ -1,7 +1,5 @@
 #!/usr/bin/env rust-script
 
-use regex::Regex;
-use rustc_version_runtime::version;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
@@ -9,14 +7,29 @@ use std::path::Path;
 use std::process::{exit, Command, Stdio};
 use std::{env, fs};
 
+use once_cell::sync::Lazy;
+use regex::Regex;
+use rustc_version_runtime::version;
+use toml::Value;
+
 use crate::logger::{get_home, get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.5-beta5";
+pub static VERSION: Lazy<String> = Lazy::new(|| {
+    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", get_home())).unwrap();
+    let parsed: Value = toml_str.parse().unwrap();
+    parsed["package"]["version"].as_str().unwrap().to_string()
+});
+
+pub static EDITION: Lazy<String> = Lazy::new(|| {
+    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", get_home())).unwrap();
+    let parsed: Value = toml_str.parse().unwrap();
+    parsed["package"]["edition"].as_str().unwrap().to_string()
+});
 
 pub fn load_configs() -> HashMap<String, String> {
-    let home_dir: String = env::var("HOME").expect("Failed to get HOME directory");
+    let home_dir: String = get_home();
 
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
@@ -359,7 +372,7 @@ pub fn web(url: &str) {
 }
 
 pub fn ver() {
-    println!("\nRusterminal version: {VERSION}");
+    println!("\nRusterminal version: {}", *VERSION);
     println!("Rust version: {}", rustc_version::version().unwrap());
     println!("Python version: {}\n", &get_python_version());
 
@@ -462,6 +475,9 @@ pub fn help() {
     let rust_version = &version();
     let python_version = &get_python_version();
 
-    println!("Rusterminal {VERSION} (Rustc {rust_version}) (Python {python_version})");
+    println!(
+        "Rusterminal {} (Rustc {rust_version} {}) (Python {python_version})",
+        *VERSION, *EDITION
+    );
     println!("Type \"rusterminal\" to get started.\n")
 }
