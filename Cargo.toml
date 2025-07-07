@@ -1,12 +1,14 @@
 [package]
 name = "Rusterminal"
-version = "0.3.5-beta5"
+version = "0.3.5-rc1"
 edition = "2024"
 
 [dependencies]
 chrono = "0.4.41"
 hostname = "0.4.1"
+once_cell = "1.21.3"
 regex = "1.11.1"
 rustc_version = "0.4.1"
 rustc_version_runtime = "0.3.0"
 rustyline = "16.0.0"
+toml = "0.8.23"
