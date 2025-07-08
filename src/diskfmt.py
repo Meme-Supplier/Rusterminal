@@ -12,10 +12,11 @@ import os
 import time
 import readline
 
-diskfmtver = "0.3.4"
+diskfmtver = "0.3.5"
 
 MAX_RETRIES = 5
 WAIT_TIME = 5  # seconds
+
 
 def runShellCommand(command):
     try:
@@ -24,21 +25,19 @@ def runShellCommand(command):
         print(f"Command failed: {command}")
         sys.exit(1)
 
+
 def checkIfDeviceExists(drive):
     result = subprocess.run(
-        ["lsblk", "-p", "-n", "-o", "NAME"],
-        capture_output=True,
-        text=True
+        ["lsblk", "-p", "-n", "-o", "NAME"], capture_output=True, text=True
     )
     return drive in result.stdout.splitlines()
+
 
 def getFirstPartition(drive):
     retries = 0
     while retries < MAX_RETRIES:
         result = subprocess.run(
-            ["lsblk", "-ln", "-o", "NAME,TYPE", drive],
-            capture_output=True,
-            text=True
+            ["lsblk", "-ln", "-o", "NAME,TYPE", drive], capture_output=True, text=True
         )
         for line in result.stdout.strip().splitlines():
             parts = line.split()
@@ -52,11 +51,12 @@ def getFirstPartition(drive):
     print("Failed to detect partition after retries.")
     sys.exit(1)
 
+
 def formatDisk(drive, name, fsys, ptable):
     print(f"\nUnmounting all partitions on {drive}...")
     subprocess.run(
         f"lsblk -ln -o NAME {drive} | grep -E '[0-9]+$' | while read part; do sudo umount /dev/$part || true; done",
-        shell=True
+        shell=True,
     )
 
     print("Wiping filesystem signatures...")
@@ -96,9 +96,12 @@ def formatDisk(drive, name, fsys, ptable):
     else:
         print(f"Skipping chown for filesystem {fsys.upper()} (not supported).")
 
+
 def main():
     print(f"Rusterminal Disk Formatter\nVersion: {diskfmtver}")
-    print("\033[91m!!! WARNING: This tool will ERASE your selected disk completely. Proceed with caution !!!\033[0m\n")
+    print(
+        "\033[91m!!! WARNING: This tool will ERASE your selected disk completely. Proceed with caution !!!\033[0m\n"
+    )
     input("Press Enter to continue...")
 
     runShellCommand("lsblk -p")
@@ -118,9 +121,9 @@ def main():
     table = input("Choice: ").strip()
 
     match table:
-        case '1':
+        case "1":
             ptable = "gpt"
-        case '2':
+        case "2":
             ptable = "msdos"
         case _:
             print("Invalid option.")
@@ -138,11 +141,11 @@ def main():
     fs_choice = input("Choice: ").strip()
 
     match fs_choice:
-        case '1':
+        case "1":
             fsys = "ext4"
-        case '2':
+        case "2":
             fsys = "vfat"
-        case '3':
+        case "3":
             fsys = "ntfs"
         case _:
             print("Invalid filesystem choice.")
@@ -161,7 +164,10 @@ def main():
 
     formatDisk(disk, name, fsys, ptable)
 
-    print("\nDisk formatting complete!\nYou may need to remove and reinsert your drive to mount it!")
+    print(
+        "\nDisk formatting complete!\nYou may need to remove and reinsert your drive to mount it!"
+    )
+
 
 if __name__ == "__main__":
     main()
