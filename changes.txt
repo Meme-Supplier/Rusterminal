@@ -201,6 +201,7 @@
 - The installer will now ask you if you want to edit Rusterminal's configs before first run
 - Rusterminal's version is now retrieved through the "Cargo.toml" file
 - The "help" command now shows Rust's edition next to Rust's version
+- overhauled "format.sh"
 
 # v0.3.6
     - beta1
