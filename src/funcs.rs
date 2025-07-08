@@ -1,21 +1,35 @@
 #!/usr/bin/env rust-script
 
-use regex::Regex;
-use rustc_version_runtime::version;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
+use std::path::Path;
 use std::process::{exit, Command, Stdio};
 use std::{env, fs};
 
-use crate::logger::{get_time, init, log};
+use once_cell::sync::Lazy;
+use regex::Regex;
+use rustc_version_runtime::version;
+use toml::Value;
+
+use crate::logger::{get_home, get_time, init, log};
 use crate::process_input;
 use crate::sysinfo::get_system_info;
 
-pub const VERSION: &str = "v0.3.4";
+pub static VERSION: Lazy<String> = Lazy::new(|| {
+    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", get_home())).unwrap();
+    let parsed: Value = toml_str.parse().unwrap();
+    parsed["package"]["version"].as_str().unwrap().to_string()
+});
+
+pub static EDITION: Lazy<String> = Lazy::new(|| {
+    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", get_home())).unwrap();
+    let parsed: Value = toml_str.parse().unwrap();
+    parsed["package"]["edition"].as_str().unwrap().to_string()
+});
 
 pub fn load_configs() -> HashMap<String, String> {
-    let home_dir = env::var("HOME").expect("Failed to get HOME directory");
+    let home_dir: String = get_home();
 
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
@@ -62,6 +76,42 @@ pub fn run_rusterminal_script(path: &str) {
     }
 }
 
+pub fn set_current_cwd(dir: &str) -> io::Result<()> {
+    let home = get_home(); // assuming this returns String
+
+    // Expand ~ and $HOME
+    let resolved_dir = if dir.starts_with("~/") {
+        format!("{home}/{}", &dir[2..])
+    } else if dir == "~" || dir == "$HOME" {
+        home
+    } else if dir.starts_with("$HOME/") {
+        format!("{home}/{}", &dir[6..])
+    } else {
+        dir.to_string()
+    };
+
+    let path = Path::new(&resolved_dir);
+
+    if !path.exists() {
+        eprintln!("Directory \"{resolved_dir}\" doesn't exist");
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("Directory does not exist: {resolved_dir}"),
+        ));
+    }
+
+    if !path.is_dir() {
+        eprintln!("Directory \"{resolved_dir}\" doesn't exist");
+        log(&format!(
+            "funcs::set_current_cwd(): Directory \"{resolved_dir}\" doesn't exist."
+        ));
+    }
+
+    env::set_current_dir(path)?;
+
+    Ok(())
+}
+
 pub fn exit_rusterminal() {
     match load_configs()
         .get("cleanCompileOnStartup")
@@ -90,17 +140,13 @@ pub fn run_python(script: &str) {
     log(&format!(
         "funcs::run_python(): Running Python script: {script}"
     ));
-
-    let _ = Command::new("python3")
-        .arg(script)
-        .status()
-        .expect("Failed to execute Python script");
+    run_shell_command(&format!("python3 {script}"));
 }
 
 pub fn fmtdsk() {
     log("funcs::fmtdsk(): Running disk formatter script.");
 
-    let home_dir = &env::var("HOME").expect("Failed to get HOME directory");
+    let home_dir = get_home();
     run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 
     log("funcs::fmtdsk(): Disk formatting successful.");
@@ -138,12 +184,12 @@ pub fn clean() {
         run_shell_command("sudo dnf autoremove -y")
     } else if detect_package_manager().as_str() == "zypper" {
         run_shell_command(
-            "sudo zypper remove $(zypper packages --orphaned | awk '/^i/ {print $5}') -y",
+            "sudo zypper remove $(zypper packages --orphaned | awk '/^i/ {print $5}') -y; sudo zypper clean --all -y; sudo rm -rf /var/cache/zypp/packages/* || exit",
         );
-        run_shell_command("sudo zypper clean --all -y");
-        run_shell_command("sudo rm -rf /var/cache/zypp/packages/* || exit");
     } else {
-        run_shell_command("sudo pacman -Rns $(pacman -Qdtq) --noconfirm; sudo pacman -S -cc --noconfirm");
+        run_shell_command(
+            "sudo pacman -Rns $(pacman -Qdtq) --noconfirm; sudo pacman -S -cc --noconfirm",
+        );
 
         match load_configs()
             .get("considerYayAsAPackageManager")
@@ -166,8 +212,7 @@ pub fn clean() {
             .map(String::as_str)
         {
             Some("true") => {
-                run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm");
-                run_shell_command("paru -S -cc --noconfirm")
+                run_shell_command("paru -Rns $(paru -Qdtq) --noconfirm; paru -S -cc --noconfirm");
             }
             Some(_) => {}
             None => {
@@ -227,8 +272,8 @@ pub fn wait(time: &str) {
 }
 
 pub fn update() {
-    let package_manager = detect_package_manager();
-    let config = load_configs();
+    let package_manager = &detect_package_manager();
+    let config = &load_configs();
 
     log("funcs::update(): Updating Rust...");
     run_shell_command("rustup update"); // Update Rust
@@ -292,10 +337,7 @@ pub fn update() {
         }
     }
 
-    match config
-        .get("enableCustomUpdateCommand")
-        .map(String::as_str)
-    {
+    match config.get("enableCustomUpdateCommand").map(String::as_str) {
         Some("true") => {
             let path = &config
                 .get("customUpdateCommand")
@@ -330,9 +372,9 @@ pub fn web(url: &str) {
 }
 
 pub fn ver() {
-    println!("\nRusterminal version: {VERSION}");
+    println!("\nRusterminal version: {}", *VERSION);
     println!("Rust version: {}", rustc_version::version().unwrap());
-    println!("Python version: {}\n", get_python_version());
+    println!("Python version: {}\n", &get_python_version());
 
     let system_info = get_system_info();
 
@@ -375,20 +417,10 @@ pub fn run_shell_command(cmd: &str) {
         .stderr(Stdio::inherit())
         .status()
     {
-        Ok(status) if status.success() => {
-            log("funcs::run_shell_command(): Command executed successfully.");
-        }
-        Ok(status) => {
-            log(&format!(
-                "funcs::run_shell_command(): Command exited with status: {}",
-                status
-            ));
-        }
-        Err(e) => {
-            log(&format!(
-                "funcs::run_shell_command(): Failed to execute command: {e}"
-            ));
-        }
+        Ok(_) => {}
+        Err(e) => log(&format!(
+            "funcs::run_shell_command(): Failed to execute command: {e}"
+        )),
     }
 }
 
@@ -440,9 +472,12 @@ pub fn get_python_version() -> String {
 }
 
 pub fn help() {
-    let rust_version = version();
-    let python_version = get_python_version();
+    let rust_version = &version();
+    let python_version = &get_python_version();
 
-    println!("Rusterminal {VERSION} (Rustc {rust_version}) (Python {python_version})");
+    println!(
+        "Rusterminal {} (Rustc {rust_version} {}) (Python {python_version})",
+        *VERSION, *EDITION
+    );
     println!("Type \"rusterminal\" to get started.\n")
 }

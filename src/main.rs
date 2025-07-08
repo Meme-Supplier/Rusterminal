@@ -1,13 +1,14 @@
 #!/usr/bin/env rust-script
 
-use hostname::get;
-use rustyline::error::ReadlineError;
-use rustyline::{Config, DefaultEditor};
 use std::collections::HashMap;
+use std::fs;
 use std::io::Write;
-use std::process::exit;
+use std::process::{exit, Command};
 use std::sync::LazyLock;
 use std::{env, io};
+
+use hostname::get;
+use rustyline::{Config, DefaultEditor};
 
 mod cmds;
 mod funcs;
@@ -35,6 +36,7 @@ fn process_input(input: &str) {
             "restart" | "reboot" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
             "fmtdsk" => funcs::fmtdsk(),
+            "ls" => funcs::run_shell_command(&format!("ls -A {:?}", env::current_dir().unwrap())),
 
             // Commands that require extra usage
             "echo" => println!("Usage: echo <text>"),
@@ -43,7 +45,6 @@ fn process_input(input: &str) {
             "expr" => println!("Usage: expr <equation>"),
             "wait" => println!("Usage: wait <time>"),
             "ping" => println!("Usage: ping <domain>"),
-            "ls" => println!("Usage: ls <directory>"),
             "del" => println!("Usage: del <flag> <file/directory>"),
             "title" => println!("Usage: title <string>"),
             "edit" => println!("Usage: edit <path>"),
@@ -66,6 +67,11 @@ fn process_input(input: &str) {
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
             _ if command.starts_with("rename ") => funcs::rename(&command[7..]),
             _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
+
+            _ if command.starts_with("cd ") => {
+                let cmd = vec!["cd", &command[3..]];
+                let _ = funcs::set_current_cwd(cmd[1]);
+            }
 
             _ => {
                 match CONFIGS
@@ -132,6 +138,11 @@ fn rusterminal(cmd: &str) {
         "clean" => funcs::clean(),
         "update" => funcs::update(),
 
+        "history" => {
+            logger::log("main:rusterminal(): Viewing Rusterminal's command history...");
+            funcs::run_shell_command("nano ~/.rusterminal_history")
+        }
+
         "reset" => {
             logger::log("main::rusterminal(): Resetting Rusterminal to it's default settings...");
             println!("Resetting Rusterminal to it's default settings...");
@@ -191,7 +202,6 @@ fn rusterminal(cmd: &str) {
         "uninstall" => {
             logger::log("main::rusterminal(): Uninstalling Rusterminal...");
             funcs::run_shell_command("cd ~/rusterminal/installer/ && bash uninstall.sh");
-            logger::log("main::rusterminal(): Uninstall successful.");
             exit(0)
         }
 
@@ -221,7 +231,6 @@ fn rusterminal(cmd: &str) {
 
         "settings" => {
             logger::log("main::rusterminal(): Changing settings...");
-
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
             logger::log("main::rusterminal(): Changed settings successfully.");
         }
@@ -236,31 +245,45 @@ fn rusterminal(cmd: &str) {
 fn get_prompt() -> String {
     logger::log("main::get_prompt(): Setting user prompt...");
 
+    let username = env::var("USER").unwrap_or_else(|_| "unknown".to_string());
+    let hostname = get()
+        .map(|h| h.to_string_lossy().into_owned())
+        .unwrap_or_else(|_| "unknown".to_string());
+    let cwd = env::current_dir()
+        .ok()
+        .and_then(|p| p.to_str().map(String::from))
+        .unwrap_or_else(|| "~".to_string());
+
     let prompt = match CONFIGS.get("promptType").map(String::as_str) {
         Some("default") => match CONFIGS.get("useHostnameInPrompt").map(String::as_str) {
             Some("true") => {
-                let hostname = get()
-                    .map(|h| h.to_string_lossy().into_owned())
-                    .unwrap_or_else(|_| "unknown".to_string());
-                let username = &env::var("USER").expect("Failed to get USER");
-                format!("{hostname}@{username}$~: ")
+                format!("{hostname}@{username} {cwd} $~: ")
             }
             Some(_) => "rusterminal$~: ".to_string(),
             None => {
                 eprintln!("Setting \"useHostnameInPrompt\" not found in config!\nTry reloading Rusterminal!");
-                logger::log("\"Setting 'useHostnameInPrompt\" not found in config!");
+                logger::log("Setting \"useHostnameInPrompt\" not found in config!");
                 "rusterminal$~: ".to_string()
             }
         },
         Some("custom") => CONFIGS
             .get("customPrompt")
             .map(|s| {
-                let s = s.trim();
-                if s.starts_with('"') && s.ends_with('"') && s.len() >= 2 {
-                    s[1..s.len() - 1].to_string()
-                } else {
-                    s.to_string()
+                let mut prompt = s.trim().to_string();
+
+                if prompt.starts_with('"') && prompt.ends_with('"') && prompt.len() >= 2 {
+                    prompt = prompt[1..prompt.len() - 1].to_string();
                 }
+
+                prompt = prompt
+                    .replace(r"\[", "")
+                    .replace(r"\]", "")
+                    .replace(r"\e", "\x1b")
+                    .replace(r"\u", &username)
+                    .replace(r"\h", &hostname)
+                    .replace(r"\w", &cwd);
+
+                prompt
             })
             .unwrap_or_else(|| "rusterminal$~: ".to_string()),
         Some(_) => "rusterminal$~: ".to_string(),
@@ -271,7 +294,44 @@ fn get_prompt() -> String {
         }
     };
 
-    prompt.to_string()
+    match CONFIGS.get("displayMemoryUsage").map(String::as_str) {
+        Some("true") => {
+            let output = Command::new("pgrep")
+                .arg("rusterminal")
+                .output()
+                .expect("failed to execute pgrep");
+
+            let pids_raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+            if pids_raw.is_empty() {
+                eprintln!("No running rusterminal processes found.");
+            }
+
+            // grab just the first PID if multiple are found
+            let pid = pids_raw.lines().next().unwrap();
+
+            let cmd = Command::new("ps")
+                .args(["-p", pid, "-o", "pid,comm,%mem,rss,vsz"])
+                .output()
+                .expect("failed to execute ps");
+
+            let mem_usage = if cmd.stdout.is_empty() {
+                String::from_utf8_lossy(&cmd.stderr).to_string()
+            } else {
+                String::from_utf8_lossy(&cmd.stdout).to_string()
+            };
+
+            format!("{mem_usage}\n{prompt}")
+        }
+        Some(_) => prompt,
+        None => {
+            eprintln!(
+                "Setting \"displayMemoryUsage\" not found in config!\nTry reloading Rusterminal!"
+            );
+            logger::log("main::get_prompt(): Setting \"displayMemoryUsage\" not found in config!");
+            prompt
+        }
+    }
 }
 
 fn check_compatability() {
@@ -286,7 +346,7 @@ fn check_compatability() {
     logger::log(&format!("main::check_compatability(): OS: {os}"));
     logger::log(&format!(
         "main::check_compatability(): Rusterminal Version: {}",
-        funcs::VERSION
+        *funcs::VERSION
     ));
 
     match CONFIGS
@@ -325,12 +385,30 @@ fn check_compatability() {
     }
 }
 
+fn get_starting_dir() -> String {
+    let dir = &CONFIGS
+        .get("startingDir")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("startingDir")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    if dir == "~/" || dir == "~" || dir == "$HOME" {
+        return logger::get_home();
+    }
+
+    dir.to_string()
+}
+
 fn init() {
     funcs::set_window_title("Rusterminal");
+    let _ = funcs::set_current_cwd(&format!("{}", get_starting_dir()));
 
     check_compatability();
 
-    logger::log("main::init(): System is compatible, launching...");
+    logger::log("main::init(): System is compatible, continuing...");
 
     match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
@@ -355,13 +433,32 @@ fn init() {
     }
 }
 
+fn get_rusterminal_history() -> io::Result<Vec<String>> {
+    let home = logger::get_home();
+    let content = fs::read_to_string(format!("{home}/.rusterminal_history"))?;
+    let words = content.lines().map(|s| s.to_string()).collect();
+
+    Ok(words)
+}
+
 fn main() {
     logger::init(&format!(
         "\n===== Start session {} =====\n",
         &logger::get_time()
     ));
 
+    logger::log(&format!(
+        "logger::get_time_format(): Using time/date format: {}",
+        logger::get_time_format()
+    ));
+
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
+
+    if let Ok(history) = get_rusterminal_history() {
+        for cmd in history {
+            let _ = rl.add_history_entry(cmd);
+        }
+    }
 
     init();
 
@@ -371,19 +468,16 @@ fn main() {
                 let input = line.trim();
                 if !input.is_empty() {
                     if let Some("true") = CONFIGS.get("commandHistoryEnabled").map(String::as_str) {
+                        let home = logger::get_home();
+
                         let _ = rl.add_history_entry(input);
+                        let _ =
+                            logger::write_to_file(input, &format!("{home}/.rusterminal_history"));
                     }
                     process_input(input)
                 }
             }
-            Err(ReadlineError::Interrupted) | Err(ReadlineError::Eof) => {
-                eprintln!("Force-exiting Rusterminal...");
-                break;
-            }
-            Err(err) => {
-                eprintln!("Error: {err:?}");
-                break;
-            }
+            Err(_) => {}
         }
     }
 }

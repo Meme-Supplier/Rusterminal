@@ -27,7 +27,7 @@ fn list() {
 }
 
 fn choose(input: &str) {
-    let input = input.trim(); // Trim whitespace and newlines
+    let input = input.trim();
 
     let file = match input {
         "1" => Some("main.rs"),
@@ -75,6 +75,6 @@ pub fn main() {
         .expect("Failed to read line");
 
     choose(&input);
-    print!("\n");
+    println!();
     run_shell_command("clear")
 }

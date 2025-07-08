@@ -186,3 +186,37 @@
 - New "shellToRunShellCommands" config
 - The "(rusterminal) clean" command now cleans up your Rusterminal installation.
 - Removed config "showReminderToSaveSettings": No use
+
+# v0.3.5
+- Code optimizations
+- Proper command history, now stored in $HOME/.rusterminal_history
+- Subcommand "history" for "rusterminal" command
+- Configs "displayMemoryUsage" and "logTimeAndDateFormat"
+- Bug fixes
+- When uninstalling Rusterminal, it will now ask you if you want to remove the command history and configs.
+- Setting a custom prompt has been overhauled
+- "cd" command
+- "startingDir" config
+- improved "ls" command
+- The installer will now ask you if you want to edit Rusterminal's configs before first run
+- Rusterminal's version is now retrieved through the "Cargo.toml" file
+- The "help" command now shows Rust's edition next to Rust's version
+- overhauled "format.sh"
+
+# v0.3.6
+    - beta1
+       - 
+    - beta2
+       - 
+    - beta3
+       - 
+    - beta4
+       - 
+    - beta5
+       - 
+    - rc1
+       - 
+    - rc2
+       - 
+    - Final changes
+       -

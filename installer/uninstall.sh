@@ -8,19 +8,26 @@ echo -e "\nDo you want to uninstall Rusterminal?\n(Y or N)"
 read -r answer
 
 case "$answer" in
-    [Nn]) exit ;;
+[Nn]) exit ;;
 esac
 
 # Remove Rusterminal files and symlink
 sudo rm -rf ~/rusterminal
 sudo rm -f /usr/local/bin/rusterminal
 
-rm -r ~/.config/rusterminal
+echo -e "\nDo you want to keep Rusterminal's configurations?\n(Y or N)"
+read -r answer
 
-# Remove from /etc/shells if present
-if grep -qxF "/usr/local/bin/rusterminal" /etc/shells; then
-    sudo sed -i '\|/usr/local/bin/rusterminal|d' /etc/shells
-fi
+case "$answer" in
+[Nn]) rm -r ~/.config/rusterminal ;;
+esac
+
+echo -e "\nDo you want to keep Rusterminal's command history?\n(Y or N)"
+read -r answer
+
+case "$answer" in
+[Nn]) rm -f ~/.rusterminal_history ;;
+esac
 
 echo -e "\nUninstalled!"
 read
