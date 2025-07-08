@@ -8,7 +8,7 @@ echo -e "\nDo you want to uninstall Rusterminal?\n(Y or N)"
 read -r answer
 
 case "$answer" in
-    [Nn]) exit ;;
+[Nn]) exit ;;
 esac
 
 # Remove Rusterminal files and symlink
@@ -19,14 +19,14 @@ echo -e "\nDo you want to keep Rusterminal's configurations?\n(Y or N)"
 read -r answer
 
 case "$answer" in
-    [Nn]) rm -r ~/.config/rusterminal ;;
+[Nn]) rm -r ~/.config/rusterminal ;;
 esac
 
 echo -e "\nDo you want to keep Rusterminal's command history?\n(Y or N)"
 read -r answer
 
 case "$answer" in
-    [Nn]) rm -f ~/.rusterminal_history ;;
+[Nn]) rm -f ~/.rusterminal_history ;;
 esac
 
 echo -e "\nUninstalled!"
