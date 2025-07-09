@@ -228,7 +228,11 @@
 - `"changes.txt"` has been renamed to `"changes.md"` and given an overhaul
 
 ### beta2
-- 
+- The subcommand `"ver"` in `"rusterminal"` now shows Rust's edition
+- Compiling Rusterminal is now part of the installation process
+- Command arguments
+  - Example: `rusterminal <arg>`
+- `"argPrefixer"` configuration
 
 ### beta3
 - 
