@@ -1,5 +1,3 @@
-#!/usr/bin/env rust-script
-
 use std::process::Command;
 use std::{env, fmt, fs};
 
