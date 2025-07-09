@@ -74,7 +74,6 @@ else
 	exit 1
 fi
 
-# Ensure cargo is available
 export PATH="$HOME/.cargo/bin:$PATH"
 
 rustup default nightly
@@ -91,14 +90,15 @@ cp -r src installer Cargo.toml changes.md launch.sh ~/rusterminal/
 mkdir -p ~/.config/rusterminal && cp ~/Rusterminal/config/settings.conf ~/.config/rusterminal/
 cd ~/.config/rusterminal && cp settings.conf defaults.conf
 
-
 chmod +x ~/rusterminal/launch.sh
 sudo ln -sf ~/rusterminal/launch.sh /usr/local/bin/rusterminal
 
 sudo rm -rf ~/Rusterminal
 sudo rm -f ~/rusterminal/installer/install.sh
 
-echo -e "Installed Rusterminal!\n"
+cd ~/rusterminal && cargo build --release
+
+echo -e "\nInstalled Rusterminal!\n"
 
 echo -e "Do you want to edit Rusterminal's configurations before launching?\n(Y or N)"
 read -r answer
@@ -108,8 +108,9 @@ case "$answer" in
 esac
 
 echo -e "\nDo you want to launch Rusterminal?\n(Y or N)"
-read -r answer
+read -r answerf
 
 case "$answer" in
 [Yy]) rusterminal ;;
+[Nn]) echo -e "\nType \"rusterminal\" in your terminal when you are ready!" ;;
 esac
