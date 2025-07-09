@@ -1,5 +1,3 @@
-#!/usr/bin/env rust-script
-
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
@@ -9,6 +7,8 @@ use std::{env, io};
 
 use hostname::get;
 use rustyline::{Config, DefaultEditor};
+
+use crate::funcs::run_shell_command;
 
 mod cmds;
 mod funcs;
@@ -95,13 +95,14 @@ fn rusterminal(cmd: &str) {
         "main::rusterminal(): Executing command in subcommand \"rusterminal()\": \"{cmd}\""
     ));
 
-    let lines: [&str; 22] = [
+    let lines: [&str; 23] = [
         "",
         "Available Commands:",
         "",
         "rusterminal <subcommand>",
         "",
         "  build",
+        "  changelog",
         "  clean",
         "  cmds",
         "  dellogs",
@@ -137,6 +138,7 @@ fn rusterminal(cmd: &str) {
         "script" => println!("Usage: rusterminal script <script path>"),
         "clean" => funcs::clean(),
         "update" => funcs::update(),
+        "changelog" => run_shell_command("nano ~/rusterminal/changes.md"),
 
         "history" => {
             logger::log("main:rusterminal(): Viewing Rusterminal's command history...");
