@@ -1,5 +1,3 @@
-#!/usr/bin/env rust-script
-
 use std::io::{self, Write};
 
 use crate::funcs::run_shell_command;
