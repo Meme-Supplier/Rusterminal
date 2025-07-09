@@ -66,7 +66,7 @@ fn process_input(input: &str) {
             _ if command.starts_with("in ") => funcs::input(&command[3..]),
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
             _ if command.starts_with("rename ") => funcs::rename(&command[7..]),
-            _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
+            _ if command.starts_with("rusterminal") => rusterminal(&command[12..]),
 
             _ if command.starts_with("cd ") => {
                 let cmd = vec!["cd", &command[3..]];
@@ -129,6 +129,7 @@ fn rusterminal(cmd: &str) {
                 println!("{line}")
             }
         }
+
         "credits" => {
             println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n")
         }
@@ -385,6 +386,8 @@ fn check_compatability() {
         println!("You're using an unsupported package manager! Expect errors and incompatability!");
         logger::log("main::check_compatability(): User is using an unsupported package manager. Errors and incompatability are imminent.");
     }
+
+    logger::log("main::check_compatability(): System is compatible, continuing...");
 }
 
 fn get_starting_dir() -> String {
@@ -404,13 +407,44 @@ fn get_starting_dir() -> String {
     dir.to_string()
 }
 
+fn handle_args() {
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    if args.is_empty() {
+        logger::log("main::handle_args(): No arguments were supplied, skipping");
+        return;
+    }
+
+    let prefix: &str = &CONFIGS
+        .get("argPrefixer")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("argPrefixer")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    for arg in args {
+        logger::log(&format!("main::handle_args(): Running argument: {arg}"));
+        process_input(&format!("{prefix} {}", &arg));
+    }
+
+    exit(0)
+}
+
+fn get_rusterminal_history() -> io::Result<Vec<String>> {
+    let home = logger::get_home();
+    let content = fs::read_to_string(format!("{home}/.rusterminal_history"))?;
+    let words = content.lines().map(|s| s.to_string()).collect();
+
+    Ok(words)
+}
+
 fn init() {
+    handle_args();
+
     funcs::set_window_title("Rusterminal");
     let _ = funcs::set_current_cwd(&format!("{}", get_starting_dir()));
-
-    check_compatability();
-
-    logger::log("main::init(): System is compatible, continuing...");
 
     match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
@@ -435,14 +469,6 @@ fn init() {
     }
 }
 
-fn get_rusterminal_history() -> io::Result<Vec<String>> {
-    let home = logger::get_home();
-    let content = fs::read_to_string(format!("{home}/.rusterminal_history"))?;
-    let words = content.lines().map(|s| s.to_string()).collect();
-
-    Ok(words)
-}
-
 fn main() {
     logger::init(&format!(
         "\n===== Start session {} =====\n",
@@ -462,6 +488,7 @@ fn main() {
         }
     }
 
+    check_compatability();
     init();
 
     loop {
