@@ -371,7 +371,11 @@ pub fn web(url: &str) {
 
 pub fn ver() {
     println!("\nRusterminal version: {}", *VERSION);
-    println!("Rust version: {}", rustc_version::version().unwrap());
+    println!(
+        "Rust version: {} {}",
+        rustc_version::version().unwrap(),
+        *EDITION
+    );
     println!("Python version: {}\n", &get_python_version());
 
     let system_info = get_system_info();
