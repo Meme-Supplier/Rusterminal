@@ -75,7 +75,6 @@ else
 fi
 
 # Ensure cargo is available
-source "$HOME/.cargo/env"
 export PATH="$HOME/.cargo/bin:$PATH"
 
 rustup default nightly
@@ -88,15 +87,10 @@ fi
 
 cd ~/Rusterminal || exit
 
-cp -r src ~/rusterminal/
-cp -r installer ~/rusterminal/
-cp launch.sh ~/rusterminal
-cp Cargo.toml ~/rusterminal/
-mkdir -p ~/.config/rusterminal
-cp ~/Rusterminal/config/settings.conf ~/.config/rusterminal/
-cd ~/.config/rusterminal/
-cp settings.conf settings2.conf
-mv settings2.conf defaults.conf
+cp -r src installer Cargo.toml changes.md launch.sh ~/rusterminal/
+mkdir -p ~/.config/rusterminal && cp ~/Rusterminal/config/settings.conf ~/.config/rusterminal/
+cd ~/.config/rusterminal && cp settings.conf defaults.conf
+
 
 chmod +x ~/rusterminal/launch.sh
 sudo ln -sf ~/rusterminal/launch.sh /usr/local/bin/rusterminal
