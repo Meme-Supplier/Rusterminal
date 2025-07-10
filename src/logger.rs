@@ -1,5 +1,3 @@
-#!/usr/bin/env rust-script
-
 use chrono::Local;
 use std::env;
 use std::fs::OpenOptions;
@@ -41,10 +39,23 @@ pub fn log(text: &str) {
     let time = get_time();
     let home = get_home();
 
-    if let Err(e) = write_to_file(
-        &format!("{time}: {text}"),
-        &format!("{home}/rusterminal/log.txt"),
-    ) {
+    match funcs::load_configs()
+        .get("outputLoggedMessages")
+        .map(String::as_str)
+    {
+        Some("true") => {
+            println!("{time}: {text}")
+        }
+        Some(_) => {}
+        None => eprintln!("Setting \"forceUniversalOScompatability\" not found in config!\nTry reloading Rusterminal!")
+    }
+
+    if let Err(e) = {
+        write_to_file(
+            &format!("{time}: {text}"),
+            &format!("{home}/rusterminal/log.txt"),
+        )
+    } {
         eprintln!("Failed to write log: {e}");
     }
 }
