@@ -246,8 +246,6 @@ fn rusterminal(cmd: &str) {
 }
 
 fn get_prompt() -> String {
-    logger::log("main::get_prompt(): Setting user prompt...");
-
     let username = env::var("USER").unwrap_or_else(|_| "unknown".to_string());
     let hostname = get()
         .map(|h| h.to_string_lossy().into_owned())
@@ -415,6 +413,10 @@ fn handle_args() {
         return;
     }
 
+    logger::log(&format!(
+        "main::handle_args(): The following arguments have been given: {args:?}"
+    ));
+
     let prefix: &str = &CONFIGS
         .get("argPrefixer")
         .map(|s| s.as_str())
@@ -424,12 +426,12 @@ fn handle_args() {
         .unwrap_or_default()[1..]
         .len()];
 
-    for arg in args {
+    for arg in &args {
         logger::log(&format!("main::handle_args(): Running argument: {arg}"));
-        process_input(&format!("{prefix} {}", &arg));
+        process_input(&format!("{prefix} {arg}"));
     }
 
-    exit(0)
+    exit(0);
 }
 
 fn get_rusterminal_history() -> io::Result<Vec<String>> {
