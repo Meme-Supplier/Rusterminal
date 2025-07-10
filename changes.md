@@ -235,7 +235,10 @@
 - `"argPrefixer"` configuration
 
 ### beta3
-- 
+- Bug fixes
+- `"outputLoggedMessages"` configuration
+- configuration `"clearScreenOnStartup"` is now disabled by default
+- `"ls"` command now lists everything in that directory (including hidden items)
 
 ### beta4
 - 
