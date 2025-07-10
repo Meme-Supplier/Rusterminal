@@ -75,7 +75,7 @@ pub fn run_rusterminal_script(path: &str) {
 }
 
 pub fn set_current_cwd(dir: &str) -> io::Result<()> {
-    let home = get_home(); // assuming this returns String
+    let home = get_home(); // assume returns String
 
     // Expand ~ and $HOME
     let resolved_dir = if dir.starts_with("~/") {
@@ -99,9 +99,13 @@ pub fn set_current_cwd(dir: &str) -> io::Result<()> {
     }
 
     if !path.is_dir() {
-        eprintln!("Directory \"{resolved_dir}\" doesn't exist");
+        eprintln!("Path \"{resolved_dir}\" is not a directory");
         log(&format!(
-            "funcs::set_current_cwd(): Directory \"{resolved_dir}\" doesn't exist."
+            "funcs::set_current_cwd(): Path \"{resolved_dir}\" is not a directory."
+        ));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("Path is not a directory: {resolved_dir}"),
         ));
     }
 
@@ -256,7 +260,7 @@ pub fn del(file: &str) {
 
 pub fn ls(path: &str) {
     log(&format!("funcs::ls(): Listing directory: {path}"));
-    run_shell_command(&format!("ls {path}"))
+    run_shell_command(&format!("ls -A {path}"))
 }
 
 pub fn ping(add: &str) {
