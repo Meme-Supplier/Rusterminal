@@ -1,6 +1,6 @@
 [package]
 name = "Rusterminal"
-version = "0.3.6-beta3"
+version = "0.3.6-beta4"
 edition = "2024"
 
 [dependencies]
