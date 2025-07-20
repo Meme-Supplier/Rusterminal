@@ -241,7 +241,9 @@
 - `"ls"` command now lists everything in that directory (including hidden items)
 
 ### beta4
-- 
+- Removed config `displayMemoryUsage`
+- New file `s_vars.rs`: Holds static variables, cleans up code
+- File structure has been changed
 
 ### beta5
 - 
