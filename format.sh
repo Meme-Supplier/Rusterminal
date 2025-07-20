@@ -38,7 +38,8 @@ rustfmt src/cmds.rs
 rustfmt src/funcs.rs
 rustfmt src/logger.rs
 rustfmt src/xray.rs
-rustfmt src/sysinfo.rs
+rustfmt src/sys/s_info.rs
+rustfmt src/sys/s_vars.rs
 
 if [ "$CLEAR_ON_EVERY_ACTION" = "true" ]; then
     clear
