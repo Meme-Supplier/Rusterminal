@@ -96,7 +96,8 @@ sudo ln -sf ~/rusterminal/launch.sh /usr/local/bin/rusterminal
 sudo rm -rf ~/Rusterminal
 sudo rm -f ~/rusterminal/installer/install.sh
 
-cd ~/rusterminal && cargo build --release
+cd ~/rusterminal
+cargo build --release
 
 echo -e "\nInstalled Rusterminal!\n"
 
