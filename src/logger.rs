@@ -1,7 +1,7 @@
 use std::fs::OpenOptions;
 use std::io::Write;
 
-use crate::funcs;
+use crate::funcs::load_configs;
 use crate::s_vars;
 
 pub fn write_to_file(text: &str, path: &str) -> std::io::Result<()> {
@@ -14,7 +14,7 @@ pub fn log(text: &str) {
     let time = s_vars::get_time();
     let home = s_vars::get_home();
 
-    match funcs::load_configs()
+    match load_configs()
         .get("outputLoggedMessages")
         .map(String::as_str)
     {
