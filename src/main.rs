@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use std::fs;
 use std::io::Write;
 use std::process::exit;
 use std::sync::LazyLock;
-use std::{env, io};
+use std::{env, io, fs};
 
 use rustyline::{Config, DefaultEditor};
 
@@ -13,7 +12,7 @@ mod logger;
 mod xray;
 
 mod sys;
-use sys::{s_vars, s_info};
+use sys::{s_info, s_vars};
 
 static CONFIGS: LazyLock<HashMap<String, String>> = LazyLock::new(|| funcs::load_configs());
 
@@ -152,7 +151,7 @@ fn rusterminal(cmd: &str) {
             funcs::run_shell_command("cd ~/.config/rusterminal/; rm -f settings.conf; mv defaults.conf settings.conf; cp settings.conf settings2.conf; mv settings2.conf defaults.conf");
 
             logger::log("main::rusterminal(): Rusterminal has been reset to its defaults.");
-            println!("\nRusterminal has been reset to its defaults.\nPlease relaunch Rusterminal for changes to take effect.");
+            println!("\nRusterminal has been reset to its defaults.\nYou may need to relaunch Rusterminal for changes to take effect.");
 
             funcs::run_shell_command("rm -rf ~/rusterminal/target");
 
@@ -234,7 +233,7 @@ fn rusterminal(cmd: &str) {
         "settings" => {
             logger::log("main::rusterminal(): Changing settings...");
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
-            logger::log("main::rusterminal(): Changed settings successfully.");
+            logger::log("main::rusterminal(): Settings have been changed.\nYou may need to relaunch Rusterminal for changes to take effect.");
         }
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
@@ -402,7 +401,17 @@ fn get_rusterminal_history() -> io::Result<Vec<String>> {
 fn init() {
     handle_args();
 
-    funcs::set_window_title("Rusterminal");
+    let window_title: &str = &CONFIGS
+        .get("startingWindowName")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("startingWindowName")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    funcs::set_window_title(window_title);
+
     let _ = funcs::set_current_cwd(&format!("{}", get_starting_dir()));
 
     match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
@@ -435,7 +444,7 @@ fn main() {
     ));
 
     logger::log(&format!(
-        "logger::get_time_format(): Using time/date format: {}",
+        "sys/s_vars::get_time_format(): Using time/date format: {}",
         s_vars::get_time_format()
     ));
 
