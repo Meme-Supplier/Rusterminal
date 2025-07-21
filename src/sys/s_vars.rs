@@ -1,6 +1,6 @@
+use chrono::Local;
 use std::process::Command;
 use std::{env, fs};
-use chrono::Local;
 
 use hostname::get;
 
@@ -32,12 +32,14 @@ pub fn get_package_manager() -> String {
             }
         }
 
-        log("funcs::detect_package_manager(): No package manager has been detected!");
+        log("sys/s_vars::get_package_manager(): No package manager has been detected!");
 
         return "none".to_string();
     }
 
-    log("funcs::detect_package_manager(): Missing \"forceDisablePackageManagerCheck\" in config!");
+    log(
+        "sys/s_vars::get_package_manager(): Missing \"forceDisablePackageManagerCheck\" in config!",
+    );
     eprintln!("Missing \"forceDisablePackageManagerCheck\" in config!\nTry reloading Rusterminal!");
 
     "none".to_string()
@@ -96,7 +98,7 @@ pub fn get_window_manager() -> Option<String> {
 
 // User //
 
-pub fn get_cwd() -> String  {
+pub fn get_cwd() -> String {
     let cwd = env::current_dir()
         .ok()
         .and_then(|p| p.to_str().map(String::from))
@@ -130,6 +132,5 @@ pub fn get_time_format() -> String {
 }
 
 pub fn get_time() -> String {
-    let format = &get_time_format();
-    Local::now().format(format).to_string()
+    Local::now().format(&get_time_format()).to_string()
 }
