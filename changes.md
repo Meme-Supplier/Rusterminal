@@ -242,11 +242,14 @@
 
 ### beta4
 - Removed config `displayMemoryUsage`
-- New file `s_vars.rs`: Holds static variables, cleans up code
+- New file `s_vars.rs`: Holds main variables, cleans up code
 - File structure has been changed
 
 ### beta5
-- 
+- Cleaned up code
+- Bug fixes
+- Updated the `xray` command: Now supports editing `s_info.rs` and `s_vars.rs`
+- `startingWindowName` config: Allows you to config the window title on startup
 
 ### rc1
 - 
