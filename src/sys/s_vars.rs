@@ -11,6 +11,19 @@ use crate::logger::log;
 
 pub const OS: &str = env::consts::OS;
 
+pub fn get_linux_kernel() -> String {
+    if let Ok(version) = fs::read_to_string("/proc/version") {
+        let parts: Vec<&str> = version.split_whitespace().collect();
+        if parts.len() >= 3 {
+            parts[2].to_string()
+        } else {
+            "unknown".to_string()
+        }
+    } else {
+        "unknown".to_string()
+    }
+}
+
 pub fn get_hostname() -> String {
     let hostname = get()
         .map(|h| h.to_string_lossy().into_owned())
