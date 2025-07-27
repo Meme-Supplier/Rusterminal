@@ -10,24 +10,26 @@ use regex::Regex;
 use rustc_version_runtime::version;
 use toml::Value;
 
-use crate::{s_vars,s_info};
 use crate::logger::{init, log};
 use crate::process_input;
+use crate::{s_info, s_vars};
 
 pub static VERSION: Lazy<String> = Lazy::new(|| {
-    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", s_vars::get_home())).unwrap();
+    let toml_str =
+        fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", s_vars::get_home())).unwrap();
     let parsed: Value = toml_str.parse().unwrap();
     parsed["package"]["version"].as_str().unwrap().to_string()
 });
 
 pub static EDITION: Lazy<String> = Lazy::new(|| {
-    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", s_vars::get_home())).unwrap();
+    let toml_str =
+        fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", s_vars::get_home())).unwrap();
     let parsed: Value = toml_str.parse().unwrap();
     parsed["package"]["edition"].as_str().unwrap().to_string()
 });
 
 pub fn load_configs() -> HashMap<String, String> {
-    let home_dir: String = s_vars::get_home();
+    let home_dir = s_vars::get_home();
 
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
@@ -391,9 +393,16 @@ pub fn ver() {
         "Window Manger: {} ({})",
         system_info.window_manager, system_info.display_protocol
     );
-    println!("Distro: {}", system_info.distro);
+    println!(
+        "Distro: {} {}",
+        system_info.distro,
+        s_vars::get_linux_kernel()
+    );
     println!("Shell: {}", system_info.shell);
-    println!("Preferred package manager: {}\n", s_vars::get_package_manager())
+    println!(
+        "Preferred package manager: {}\n",
+        s_vars::get_package_manager()
+    )
 }
 
 pub fn run_shell_command(cmd: &str) {
@@ -444,8 +453,8 @@ pub fn get_python_version() -> String {
         String::from_utf8_lossy(&output.stdout).to_string()
     };
 
-    let re = Regex::new(r"\b(\d+\.\d+\.\d+)\b").unwrap();
-    let python_version = re
+    let python_version = Regex::new(r"\b(\d+\.\d+\.\d+)\b")
+        .unwrap()
         .captures(&raw_output)
         .and_then(|caps| caps.get(1))
         .map(|m| m.as_str())
