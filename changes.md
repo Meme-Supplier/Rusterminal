@@ -252,7 +252,9 @@
 - `startingWindowName` config: Allows you to config the window title on startup
 
 ### rc1
-- 
+- subcommand `ver` in command `rusterminal` command now shows the kernel version next to the distro name
+- `commandSplitter` config: Allows you to set which character(s) that splits commands (such as `;` or `&&`)
+- Bug fix
 
 ### rc2
 - 
