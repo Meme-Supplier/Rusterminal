@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::process::exit;
 use std::sync::LazyLock;
-use std::{env, io, fs};
+use std::{env, fs, io};
 
 use rustyline::{Config, DefaultEditor};
 
@@ -21,7 +21,16 @@ fn process_input(input: &str) {
         "main::process_input(): Executing command: \"{input}\""
     ));
 
-    for command in input.split("&&").map(|s| s.trim()) {
+    let cmd_splitter: &str = &CONFIGS
+        .get("commandSplitter")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("commandSplitter")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    for command in input.split(cmd_splitter).map(|s| s.trim()) {
         if command.is_empty() {
             continue;
         }
@@ -233,7 +242,7 @@ fn rusterminal(cmd: &str) {
         "settings" => {
             logger::log("main::rusterminal(): Changing settings...");
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
-            logger::log("main::rusterminal(): Settings have been changed.\nYou may need to relaunch Rusterminal for changes to take effect.");
+            println!("\nmain::rusterminal(): Settings have been changed.\nYou may need to relaunch Rusterminal for changes to take effect.\n");
         }
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
