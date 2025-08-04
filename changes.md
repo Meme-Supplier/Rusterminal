@@ -257,7 +257,7 @@
 - Bug fix
 
 ### rc2
-- 
+- (skip)
 
 ### Final changes
-- 
+- Minor tweaks
