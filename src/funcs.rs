@@ -1,5 +1,3 @@
-#!/usr/bin/env rust-script
-
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
@@ -12,24 +10,26 @@ use regex::Regex;
 use rustc_version_runtime::version;
 use toml::Value;
 
-use crate::logger::{get_home, get_time, init, log};
+use crate::logger::{init, log};
 use crate::process_input;
-use crate::sysinfo::get_system_info;
+use crate::{s_info, s_vars};
 
 pub static VERSION: Lazy<String> = Lazy::new(|| {
-    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", get_home())).unwrap();
+    let toml_str =
+        fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", s_vars::get_home())).unwrap();
     let parsed: Value = toml_str.parse().unwrap();
     parsed["package"]["version"].as_str().unwrap().to_string()
 });
 
 pub static EDITION: Lazy<String> = Lazy::new(|| {
-    let toml_str = fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", get_home())).unwrap();
+    let toml_str =
+        fs::read_to_string(&format!("{}/rusterminal/Cargo.toml", s_vars::get_home())).unwrap();
     let parsed: Value = toml_str.parse().unwrap();
     parsed["package"]["edition"].as_str().unwrap().to_string()
 });
 
 pub fn load_configs() -> HashMap<String, String> {
-    let home_dir: String = get_home();
+    let home_dir = s_vars::get_home();
 
     let content = fs::read_to_string(format!("{home_dir}/.config/rusterminal/settings.conf"))
         .expect("Failed to read config");
@@ -77,7 +77,7 @@ pub fn run_rusterminal_script(path: &str) {
 }
 
 pub fn set_current_cwd(dir: &str) -> io::Result<()> {
-    let home = get_home(); // assuming this returns String
+    let home = s_vars::get_home(); // assume returns String
 
     // Expand ~ and $HOME
     let resolved_dir = if dir.starts_with("~/") {
@@ -101,9 +101,13 @@ pub fn set_current_cwd(dir: &str) -> io::Result<()> {
     }
 
     if !path.is_dir() {
-        eprintln!("Directory \"{resolved_dir}\" doesn't exist");
+        eprintln!("Path \"{resolved_dir}\" is not a directory");
         log(&format!(
-            "funcs::set_current_cwd(): Directory \"{resolved_dir}\" doesn't exist."
+            "funcs::set_current_cwd(): Path \"{resolved_dir}\" is not a directory."
+        ));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("Path is not a directory: {resolved_dir}"),
         ));
     }
 
@@ -124,7 +128,7 @@ pub fn exit_rusterminal() {
         }
         Some(_) => {
             log("funcs::exit_rusterminal(): Exiting Rusterminal...");
-            init(&format!("\n===== End Session {} =====", get_time()));
+            init(&format!("\n===== End Session {} =====", s_vars::get_time()));
             exit(0)
         }
         None => {
@@ -146,7 +150,7 @@ pub fn run_python(script: &str) {
 pub fn fmtdsk() {
     log("funcs::fmtdsk(): Running disk formatter script.");
 
-    let home_dir = get_home();
+    let home_dir = s_vars::get_home();
     run_python(&format!("{home_dir}/rusterminal/src/diskfmt.py"));
 
     log("funcs::fmtdsk(): Disk formatting successful.");
@@ -176,13 +180,15 @@ pub fn input(str: &str) {
 }
 
 pub fn clean() {
+    let pkg_mgr = s_vars::get_package_manager();
+
     log("funcs::clean(): Cleaning up your package manager...");
 
-    if detect_package_manager().as_str() == "apt" {
+    if pkg_mgr == "apt" {
         run_shell_command("sudo apt autoremove -y")
-    } else if detect_package_manager().as_str() == "dnf" {
+    } else if pkg_mgr == "dnf" {
         run_shell_command("sudo dnf autoremove -y")
-    } else if detect_package_manager().as_str() == "zypper" {
+    } else if pkg_mgr == "zypper" {
         run_shell_command(
             "sudo zypper remove $(zypper packages --orphaned | awk '/^i/ {print $5}') -y; sudo zypper clean --all -y; sudo rm -rf /var/cache/zypp/packages/* || exit",
         );
@@ -258,7 +264,7 @@ pub fn del(file: &str) {
 
 pub fn ls(path: &str) {
     log(&format!("funcs::ls(): Listing directory: {path}"));
-    run_shell_command(&format!("ls {path}"))
+    run_shell_command(&format!("ls -A {path}"))
 }
 
 pub fn ping(add: &str) {
@@ -272,7 +278,7 @@ pub fn wait(time: &str) {
 }
 
 pub fn update() {
-    let package_manager = &detect_package_manager();
+    let package_manager = &s_vars::get_package_manager();
     let config = &load_configs();
 
     log("funcs::update(): Updating Rust...");
@@ -373,19 +379,30 @@ pub fn web(url: &str) {
 
 pub fn ver() {
     println!("\nRusterminal version: {}", *VERSION);
-    println!("Rust version: {}", rustc_version::version().unwrap());
+    println!(
+        "Rust version: {} {}",
+        rustc_version::version().unwrap(),
+        *EDITION
+    );
     println!("Python version: {}\n", &get_python_version());
 
-    let system_info = get_system_info();
+    let system_info = s_info::get_system_info();
 
     println!("Desktop Environment: {}", system_info.desktop_environment);
     println!(
         "Window Manger: {} ({})",
         system_info.window_manager, system_info.display_protocol
     );
-    println!("Distro: {}", system_info.distro);
+    println!(
+        "Distro: {} {}",
+        system_info.distro,
+        s_vars::get_linux_kernel()
+    );
     println!("Shell: {}", system_info.shell);
-    println!("Preferred package manager: {}\n", detect_package_manager())
+    println!(
+        "Preferred package manager: {}\n",
+        s_vars::get_package_manager()
+    )
 }
 
 pub fn run_shell_command(cmd: &str) {
@@ -424,31 +441,6 @@ pub fn run_shell_command(cmd: &str) {
     }
 }
 
-pub fn detect_package_manager() -> String {
-    if let Some(val) = load_configs()
-        .get("forceDisablePackageManagerCheck")
-        .map(String::as_str)
-    {
-        if val == "false" {
-            /* Supported package managers are listed here */
-            for pm in ["pacman", "dnf", "apt", "zypper"] {
-                if Command::new(pm).output().is_ok() {
-                    return pm.to_string();
-                }
-            }
-        }
-
-        log("funcs::detect_package_manager(): No package manager has been detected!");
-
-        return "none".to_string();
-    }
-
-    log("funcs::detect_package_manager(): Missing \"forceDisablePackageManagerCheck\" in config!");
-    eprintln!("Missing \"forceDisablePackageManagerCheck\" in config!\nTry reloading Rusterminal!");
-
-    "none".to_string()
-}
-
 pub fn get_python_version() -> String {
     let output = Command::new("python3")
         .arg("--version")
@@ -461,8 +453,8 @@ pub fn get_python_version() -> String {
         String::from_utf8_lossy(&output.stdout).to_string()
     };
 
-    let re = Regex::new(r"\b(\d+\.\d+\.\d+)\b").unwrap();
-    let python_version = re
+    let python_version = Regex::new(r"\b(\d+\.\d+\.\d+)\b")
+        .unwrap()
         .captures(&raw_output)
         .and_then(|caps| caps.get(1))
         .map(|m| m.as_str())

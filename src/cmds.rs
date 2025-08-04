@@ -1,5 +1,3 @@
-#!/usr/bin/env rust-script
-
 pub fn list() {
     let lines: [&str; 22] = [
         "",

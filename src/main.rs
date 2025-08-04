@@ -1,20 +1,18 @@
-#!/usr/bin/env rust-script
-
 use std::collections::HashMap;
-use std::fs;
 use std::io::Write;
-use std::process::{exit, Command};
+use std::process::exit;
 use std::sync::LazyLock;
-use std::{env, io};
+use std::{env, fs, io};
 
-use hostname::get;
 use rustyline::{Config, DefaultEditor};
 
 mod cmds;
 mod funcs;
 mod logger;
-mod sysinfo;
 mod xray;
+
+mod sys;
+use sys::{s_info, s_vars};
 
 static CONFIGS: LazyLock<HashMap<String, String>> = LazyLock::new(|| funcs::load_configs());
 
@@ -23,7 +21,16 @@ fn process_input(input: &str) {
         "main::process_input(): Executing command: \"{input}\""
     ));
 
-    for command in input.split("&&").map(|s| s.trim()) {
+    let cmd_splitter: &str = &CONFIGS
+        .get("commandSplitter")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("commandSplitter")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    for command in input.split(cmd_splitter).map(|s| s.trim()) {
         if command.is_empty() {
             continue;
         }
@@ -36,7 +43,7 @@ fn process_input(input: &str) {
             "restart" | "reboot" => funcs::run_shell_command("sudo reboot"),
             "python" | "python3" => funcs::run_shell_command("python3"),
             "fmtdsk" => funcs::fmtdsk(),
-            "ls" => funcs::run_shell_command(&format!("ls -A {:?}", env::current_dir().unwrap())),
+            "ls" => funcs::run_shell_command(&format!("ls -A {}", s_vars::get_cwd())),
 
             // Commands that require extra usage
             "echo" => println!("Usage: echo <text>"),
@@ -66,7 +73,7 @@ fn process_input(input: &str) {
             _ if command.starts_with("in ") => funcs::input(&command[3..]),
             _ if command.starts_with("newdir ") => funcs::new_dir(&command[7..]),
             _ if command.starts_with("rename ") => funcs::rename(&command[7..]),
-            _ if command.starts_with("rusterminal ") => rusterminal(&command[12..]),
+            _ if command.starts_with("rusterminal") => rusterminal(&command[12..]),
 
             _ if command.starts_with("cd ") => {
                 let cmd = vec!["cd", &command[3..]];
@@ -95,13 +102,14 @@ fn rusterminal(cmd: &str) {
         "main::rusterminal(): Executing command in subcommand \"rusterminal()\": \"{cmd}\""
     ));
 
-    let lines: [&str; 22] = [
+    let lines: [&str; 23] = [
         "",
         "Available Commands:",
         "",
         "rusterminal <subcommand>",
         "",
         "  build",
+        "  changelog",
         "  clean",
         "  cmds",
         "  dellogs",
@@ -128,6 +136,7 @@ fn rusterminal(cmd: &str) {
                 println!("{line}")
             }
         }
+
         "credits" => {
             println!("\nCredits:\n\nMaintainer: Meme Supplier\nLead programmer: Meme Supplier\n")
         }
@@ -137,6 +146,7 @@ fn rusterminal(cmd: &str) {
         "script" => println!("Usage: rusterminal script <script path>"),
         "clean" => funcs::clean(),
         "update" => funcs::update(),
+        "changelog" => funcs::run_shell_command("nano ~/rusterminal/changes.md"),
 
         "history" => {
             logger::log("main:rusterminal(): Viewing Rusterminal's command history...");
@@ -150,7 +160,7 @@ fn rusterminal(cmd: &str) {
             funcs::run_shell_command("cd ~/.config/rusterminal/; rm -f settings.conf; mv defaults.conf settings.conf; cp settings.conf settings2.conf; mv settings2.conf defaults.conf");
 
             logger::log("main::rusterminal(): Rusterminal has been reset to its defaults.");
-            println!("\nRusterminal has been reset to its defaults.\nPlease relaunch Rusterminal for changes to take effect.");
+            println!("\nRusterminal has been reset to its defaults.\nYou may need to relaunch Rusterminal for changes to take effect.");
 
             funcs::run_shell_command("rm -rf ~/rusterminal/target");
 
@@ -232,7 +242,7 @@ fn rusterminal(cmd: &str) {
         "settings" => {
             logger::log("main::rusterminal(): Changing settings...");
             funcs::run_shell_command("nano ~/.config/rusterminal/settings.conf");
-            logger::log("main::rusterminal(): Changed settings successfully.");
+            println!("\nmain::rusterminal(): Settings have been changed.\nYou may need to relaunch Rusterminal for changes to take effect.\n");
         }
 
         _ if cmd.starts_with("title ") => funcs::set_window_title(&cmd[6..]),
@@ -243,16 +253,9 @@ fn rusterminal(cmd: &str) {
 }
 
 fn get_prompt() -> String {
-    logger::log("main::get_prompt(): Setting user prompt...");
-
-    let username = env::var("USER").unwrap_or_else(|_| "unknown".to_string());
-    let hostname = get()
-        .map(|h| h.to_string_lossy().into_owned())
-        .unwrap_or_else(|_| "unknown".to_string());
-    let cwd = env::current_dir()
-        .ok()
-        .and_then(|p| p.to_str().map(String::from))
-        .unwrap_or_else(|| "~".to_string());
+    let username = s_vars::get_user();
+    let hostname = s_vars::get_hostname();
+    let cwd = s_vars::get_cwd();
 
     let prompt = match CONFIGS.get("promptType").map(String::as_str) {
         Some("default") => match CONFIGS.get("useHostnameInPrompt").map(String::as_str) {
@@ -294,51 +297,14 @@ fn get_prompt() -> String {
         }
     };
 
-    match CONFIGS.get("displayMemoryUsage").map(String::as_str) {
-        Some("true") => {
-            let output = Command::new("pgrep")
-                .arg("rusterminal")
-                .output()
-                .expect("failed to execute pgrep");
-
-            let pids_raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
-
-            if pids_raw.is_empty() {
-                eprintln!("No running rusterminal processes found.");
-            }
-
-            // grab just the first PID if multiple are found
-            let pid = pids_raw.lines().next().unwrap();
-
-            let cmd = Command::new("ps")
-                .args(["-p", pid, "-o", "pid,comm,%mem,rss,vsz"])
-                .output()
-                .expect("failed to execute ps");
-
-            let mem_usage = if cmd.stdout.is_empty() {
-                String::from_utf8_lossy(&cmd.stderr).to_string()
-            } else {
-                String::from_utf8_lossy(&cmd.stdout).to_string()
-            };
-
-            format!("{mem_usage}\n{prompt}")
-        }
-        Some(_) => prompt,
-        None => {
-            eprintln!(
-                "Setting \"displayMemoryUsage\" not found in config!\nTry reloading Rusterminal!"
-            );
-            logger::log("main::get_prompt(): Setting \"displayMemoryUsage\" not found in config!");
-            prompt
-        }
-    }
+    prompt
 }
 
 fn check_compatability() {
     logger::log("main::rusterminal(): Checking compatability...");
 
-    let package_manager = funcs::detect_package_manager();
-    let os = env::consts::OS;
+    let package_manager = s_vars::get_package_manager();
+    let os = s_vars::OS;
 
     logger::log(&format!(
         "main::check_compatability(): Package Manager: {package_manager}"
@@ -383,6 +349,8 @@ fn check_compatability() {
         println!("You're using an unsupported package manager! Expect errors and incompatability!");
         logger::log("main::check_compatability(): User is using an unsupported package manager. Errors and incompatability are imminent.");
     }
+
+    logger::log("main::check_compatability(): System is compatible, continuing...");
 }
 
 fn get_starting_dir() -> String {
@@ -396,19 +364,64 @@ fn get_starting_dir() -> String {
         .len()];
 
     if dir == "~/" || dir == "~" || dir == "$HOME" {
-        return logger::get_home();
+        return s_vars::get_home();
     }
 
     dir.to_string()
 }
 
+fn handle_args() {
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    if args.is_empty() {
+        logger::log("main::handle_args(): No arguments were supplied, skipping");
+        return;
+    }
+
+    logger::log(&format!(
+        "main::handle_args(): The following arguments have been given: {args:?}"
+    ));
+
+    let prefix: &str = &CONFIGS
+        .get("argPrefixer")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("argPrefixer")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    for arg in &args {
+        logger::log(&format!("main::handle_args(): Running argument: {arg}"));
+        process_input(&format!("{prefix} {arg}"));
+    }
+
+    exit(0);
+}
+
+fn get_rusterminal_history() -> io::Result<Vec<String>> {
+    let home = s_vars::get_home();
+    let content = fs::read_to_string(format!("{home}/.rusterminal_history"))?;
+    let words = content.lines().map(|s| s.to_string()).collect();
+
+    Ok(words)
+}
+
 fn init() {
-    funcs::set_window_title("Rusterminal");
+    handle_args();
+
+    let window_title: &str = &CONFIGS
+        .get("startingWindowName")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..CONFIGS
+        .get("startingWindowName")
+        .map(|s| s.as_str())
+        .unwrap_or_default()[1..]
+        .len()];
+
+    funcs::set_window_title(window_title);
+
     let _ = funcs::set_current_cwd(&format!("{}", get_starting_dir()));
-
-    check_compatability();
-
-    logger::log("main::init(): System is compatible, continuing...");
 
     match CONFIGS.get("clearScreenOnStartup").map(String::as_str) {
         Some("true") => funcs::run_shell_command("clear"),
@@ -433,23 +446,15 @@ fn init() {
     }
 }
 
-fn get_rusterminal_history() -> io::Result<Vec<String>> {
-    let home = logger::get_home();
-    let content = fs::read_to_string(format!("{home}/.rusterminal_history"))?;
-    let words = content.lines().map(|s| s.to_string()).collect();
-
-    Ok(words)
-}
-
 fn main() {
     logger::init(&format!(
         "\n===== Start session {} =====\n",
-        &logger::get_time()
+        s_vars::get_time()
     ));
 
     logger::log(&format!(
-        "logger::get_time_format(): Using time/date format: {}",
-        logger::get_time_format()
+        "sys/s_vars::get_time_format(): Using time/date format: {}",
+        s_vars::get_time_format()
     ));
 
     let mut rl = DefaultEditor::with_config(Config::default()).expect("Failed to create editor");
@@ -460,6 +465,7 @@ fn main() {
         }
     }
 
+    check_compatability();
     init();
 
     loop {
@@ -468,7 +474,7 @@ fn main() {
                 let input = line.trim();
                 if !input.is_empty() {
                     if let Some("true") = CONFIGS.get("commandHistoryEnabled").map(String::as_str) {
-                        let home = logger::get_home();
+                        let home = s_vars::get_home();
 
                         let _ = rl.add_history_entry(input);
                         let _ =
