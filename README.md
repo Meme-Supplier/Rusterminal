@@ -1,9 +1,10 @@
 # Rusterminal - An "alternative" to Zsh and Bash
+# WARNING: RUSTERMINAL HAS BEEN DEPRECATED AND WILL NO LONGER RECIEVE UPDATES
 
 ## Current builds:
 
-- Latest release: **(v0.3.5)**
-- Latest beta: **(v0.3.6)**
+- Latest release: **(v0.3.6-2)**
+- Latest beta: **(v0.3.6-2)**
 
 # Tested on:
 
