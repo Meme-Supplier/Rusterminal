@@ -471,5 +471,6 @@ pub fn help() {
         "Rusterminal {} (Rustc {rust_version} {}) (Python {python_version})",
         *VERSION, *EDITION
     );
+    println!("WARNING: RUSTERMINAL HAS BEEN DEPRECATED AND WILL NO LONGER RECIEVE UPDATES");
     println!("Type \"rusterminal\" to get started.\n")
 }
