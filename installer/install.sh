@@ -26,7 +26,8 @@ if [[ "$PM" == "Unsupported package manager" ]]; then
     exit 1
 fi
 
-echo -e "\nDo you want to install Rusterminal?\n(Y or N)"
+echo -e "\nWARNING: RUSTERMINAL HAS BEEN DEPRECATED AND WILL NO LONGER RECIEVE UPDATES\n"
+echo -e "Do you want to install Rusterminal?\n(Y or N)"
 read -r answer
 
 case "$answer" in
