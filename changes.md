@@ -261,3 +261,5 @@
 
 ### Final changes
 - Minor tweaks
+
+# Deprecation (v0.3.6-2)
